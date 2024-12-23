@@ -1,0 +1,325 @@
+{% extends 'guestbook/base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto space-y-6">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-6 text-center">Digital Guestbook</h1>
+  
+        <div class="bg-white shadow-xl rounded-xl overflow-hidden">
+            <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                <h2 class="text-2xl font-bold text-gray-800">Sign Our Guestbook</h2>
+            </div>
+            
+            <form id="guestbookForm" method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                <div class="p-6 space-y-6">
+                    <div class="relative">
+                        <input type="text" 
+                               id="{{ form.name.id_for_label }}" 
+                               name="{{ form.name.name }}" 
+                               required
+                               placeholder=" "
+                               class="peer w-full px-4 py-3 rounded-lg border-2 border-gray-200 
+                                      placeholder-transparent transition-colors duration-200
+                                      focus:border-blue-500 focus:outline-none focus:ring-2 
+                                      focus:ring-blue-200 bg-white text-gray-800">
+                        <label for="{{ form.name.id_for_label }}" 
+                               class="absolute left-4 -top-2.5 bg-white px-1 text-sm text-gray-600
+                                      transition-all peer-placeholder-shown:text-base 
+                                      peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-3.5
+                                      peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-blue-600">
+                            Your Name <span class="text-red-500">*</span>
+                        </label>
+                    </div>
+
+                    <div class="relative">
+                        <textarea id="{{ form.message.id_for_label }}" 
+                                  name="{{ form.message.name }}"
+                                  rows="4"
+                                  placeholder=" "
+                                  class="peer w-full px-4 py-3 rounded-lg border-2 border-gray-200 
+                                         placeholder-transparent transition-colors duration-200
+                                         focus:border-blue-500 focus:outline-none focus:ring-2 
+                                         focus:ring-blue-200 bg-white text-gray-800 resize-none"></textarea>
+                        <label for="{{ form.message.id_for_label }}"
+                               class="absolute left-4 -top-2.5 bg-white px-1 text-sm text-gray-600
+                                      transition-all peer-placeholder-shown:text-base 
+                                      peer-placeholder-shown:text-gray-500 peer-placeholder-shown:top-3.5
+                                      peer-focus:-top-2.5 peer-focus:text-sm peer-focus:text-blue-600">
+                            Your Message
+                        </label>
+                        <div class="absolute right-2 bottom-2 text-sm text-gray-400">
+                            <span id="messageLength">0</span>/500
+                        </div>
+                    </div>
+
+                    <div class="relative">
+                        <label class="block text-gray-700 font-medium mb-2">
+                            Your Signature <span class="text-red-500">*</span>
+                        </label>
+                        <canvas id="signatureCanvas" 
+                                class="w-full h-48 border-2 border-gray-200 rounded-lg bg-white 
+                                       cursor-crosshair transition-colors duration-200
+                                       hover:border-gray-300 focus:border-blue-500"></canvas>
+                        <div class="mt-2 flex justify-between">
+                            <button 
+                                type="button" 
+                                id="clearSignature" 
+                                class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-md transition duration-200"
+                            >
+                                Clear Signature
+                            </button>
+                            <button 
+                                type="submit" 
+                                class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition duration-200"
+                            >
+                                Submit Entry
+                            </button>
+                        </div>
+                        {{ form.signature }}
+                    </div>
+                </div>
+            </form>
+        </div>
+  
+        <div class="space-y-8">
+            <div class="flex justify-between items-center">
+                <h2 class="text-3xl font-bold text-gray-900">Guestbook Entries</h2>
+                <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                    {{ entries|length }} entries
+                </span>
+            </div>
+
+            <div class="grid gap-6">
+                {% for entry in entries %}
+                <div class="group bg-white shadow-md hover:shadow-xl rounded-xl overflow-hidden transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+                                {{ entry.name }}
+                            </h3>
+                            <p class="text-gray-500 text-sm mt-1">
+                                {{ entry.created_at|date:"l, F j, Y" }}
+                            </p>
+                        </div>
+                        <div class="hidden sm:block">
+                            <div class="block sm:flex items-center space-x-2">
+                                <span class="inline-flex items-center px-3 py-1 bg-gradient-to-r from-blue-50 to-blue-100 
+                                             text-blue-700 rounded-full text-xs font-medium group-hover:from-blue-100 
+                                             group-hover:to-blue-200 transition-all duration-300">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <time datetime="{{ entry.created_at|date:'c' }}" 
+                                          title="{{ entry.created_at|date:'l, F j, Y' }}">
+                                        {{ entry.created_at|timesince }} ago
+                                    </time>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 items-center py-2 px-6">
+                        <!-- Entry Number Badge -->
+                        <span class="inline-flex items-center px-3 py-1 bg-gradient-to-r from-purple-50 to-purple-100 
+                                     text-purple-700 rounded-full text-xs font-medium group-hover:from-purple-100 
+                                     group-hover:to-purple-200 transition-all duration-300">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Entry #{{ forloop.counter }}
+                        </span>
+
+                        <!-- Timestamp Badge -->
+                        <span class="inline-flex items-center px-3 py-1 bg-gradient-to-r from-blue-50 to-blue-100 
+                                     text-blue-700 rounded-full text-xs font-medium group-hover:from-blue-100 
+                                     group-hover:to-blue-200 transition-all duration-300">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <time datetime="{{ entry.created_at|date:'c' }}" 
+                                  title="{{ entry.created_at|date:'l, F j, Y' }}">
+                                {{ entry.created_at|timesince }} ago
+                            </time>
+                        </span>
+
+                        <!-- Status Badge -->
+                        <span class="inline-flex items-center px-3 py-1 bg-gradient-to-r from-green-50 to-green-100 
+                                     text-green-700 rounded-full text-xs font-medium group-hover:from-green-100 
+                                     group-hover:to-green-200 transition-all duration-300">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Verified
+                        </span>
+                    </div>
+
+                    {% if entry.message %}
+                    <div class="px-6 py-4 bg-white">
+                        <p class="text-gray-700 leading-relaxed">{{ entry.message }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if entry.signature_image %}
+                    <div class="px-6 py-4 bg-gray-50">
+                        <div class="relative overflow-hidden rounded-lg border-2 border-gray-100 hover:border-blue-200 transition-colors">
+                            <img 
+                                src="{{ entry.signature_image.url }}" 
+                                alt="Signature from {{ entry.name }}" 
+                                class="max-h-32 w-full object-contain bg-white p-2"
+                                loading="lazy"
+                            >
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div class="text-center py-12">
+                    <p class="text-gray-500 text-lg">No entries yet. Be the first to sign!</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.getElementById('signatureCanvas');
+    const ctx = canvas.getContext('2d');
+    const signatureInput = document.querySelector('input[name="signature"]');
+    const form = document.getElementById('guestbookForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+
+    function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        canvas.style.width = `${rect.width}px`;
+        canvas.style.height = `${rect.height}px`;
+        
+        ctx.scale(dpr, dpr);
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#1a1a1a';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+    }
+
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    let hasSignature = false;
+
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+        };
+    }
+
+    function startDraw(e) {
+        isDrawing = true;
+        const pos = getPos(e);
+        lastX = pos.x;
+        lastY = pos.y;
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        e.preventDefault();
+        
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        
+        lastX = pos.x;
+        lastY = pos.y;
+        hasSignature = true;
+    }
+
+    function endDraw() {
+        if (isDrawing) {
+            isDrawing = false;
+            if (hasSignature) {
+                signatureInput.value = canvas.toDataURL();
+            }
+        }
+    }
+
+    // Initialize
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // Mouse Events
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', endDraw);
+    canvas.addEventListener('mouseout', endDraw);
+
+    // Touch Events
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        startDraw(e);
+    });
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        draw(e);
+    });
+    canvas.addEventListener('touchend', endDraw);
+
+    // Clear Button
+    document.getElementById('clearSignature').addEventListener('click', function() {
+        hasSignature = false;
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#1a1a1a';
+        signatureInput.value = '';
+    });
+
+    // Form Submit
+    form.addEventListener('submit', function(e) {
+        if (!hasSignature || !signatureInput.value) {
+            e.preventDefault();
+            canvas.classList.add('border-red-500');
+            canvas.classList.remove('border-gray-200');
+            setTimeout(() => {
+                canvas.classList.remove('border-red-500');
+                canvas.classList.add('border-gray-200');
+            }, 2000);
+            return false;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="inline-block animate-spin mr-2">↻</span>Submitting...';
+        submitBtn.classList.add('opacity-75');
+    });
+
+    // Add after existing document.ready:
+    $('#{{ form.message.id_for_label }}').on('input', function() {
+        const length = $(this).val().length;
+        $('#messageLength').text(length);
+        if (length > 450) {
+            $('#messageLength').addClass('text-amber-500');
+        } else {
+            $('#messageLength').removeClass('text-amber-500');
+        }
+    });
+});
+</script>
+{% endblock %}
