@@ -1,0 +1,136 @@
+{% extends 'guestbook/base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="w-full mx-auto">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-8 text-center">Guest Messages</h1>
+        
+        <!-- Message Board -->
+        <div class="relative w-[800px] h-[600px] mx-auto overflow-hidden
+                    border-2 border-gray-200 rounded-xl
+                    bg-gray-50/30 backdrop-blur-sm
+                    shadow-inner">
+            {% for message in messages %}
+                <div class="absolute group cursor-pointer 
+                           {% cycle 'left-[5%]' 'left-[25%]' 'left-[45%]' 'left-[65%]' 'left-[85%]' %}
+                           {% cycle 'top-[15%]' 'top-[35%]' 'top-[55%]' 'top-[75%]' %}
+                           {% cycle 'rotate-[-15deg]' 'rotate-[10deg]' 'rotate-[-5deg]' 'rotate-[15deg]' %}">
+                    <div class="transition-all duration-300 ease-in-out
+                               hover:rotate-0 hover:scale-150 hover:z-50">
+                        <!-- Message Content -->
+                        <img src="{{ message.signature_base64 }}"
+                             alt="Guest message"
+                             class="w-[150px] object-contain" />
+                        <!-- Timestamp -->
+                        <div class="mt-2 text-right text-[10px] text-gray-400 opacity-0 group-hover:opacity-100">
+                            {{ message.created_at|date:"M d, Y" }}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="sticky bottom-8 w-full max-w-7xl mx-auto z-50 mb-2">
+    <div class="flex justify-end space-x-4 px-4">
+        <button id="downloadPNG" 
+                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg
+                       flex items-center space-x-2 transition-colors
+                       shadow-lg hover:shadow-xl">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            <span>Save as PNG</span>
+        </button>
+        <button id="downloadPDF" 
+                class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg
+                       flex items-center space-x-2 transition-colors
+                       shadow-lg hover:shadow-xl">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <span>Save as PDF</span>
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const board = document.querySelector('.relative');
+    
+    // Download Functions
+    const downloadPNG = document.getElementById('downloadPNG');
+    const downloadPDF = document.getElementById('downloadPDF');
+
+    downloadPNG.addEventListener('click', async () => {
+        downloadPNG.disabled = true;
+        downloadPNG.innerHTML = '<span class="animate-spin">↻</span> Generating...';
+        
+        try {
+            const canvas = await html2canvas(board, {
+                scale: 2,
+                backgroundColor: '#F9FAFB'
+            });
+            
+            const link = document.createElement('a');
+            link.download = 'guestbook-messages.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        } catch (error) {
+            console.error('Error generating PNG:', error);
+        } finally {
+            downloadPNG.disabled = false;
+            downloadPNG.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg><span>Save as PNG</span>';
+        }
+    });
+
+    downloadPDF.addEventListener('click', async () => {
+        downloadPDF.disabled = true;
+        downloadPDF.innerHTML = '<span class="animate-spin">↻</span> Generating...';
+        
+        try {
+            const canvas = await html2canvas(board, {
+                scale: 2,
+                backgroundColor: '#F9FAFB',
+                logging: true
+            });
+            
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'px',
+                format: [canvas.width, canvas.height]
+            });
+            
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save('guestbook-messages.pdf');
+            
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            alert('Failed to generate PDF. Please try again.');
+        } finally {
+            downloadPDF.disabled = false;
+            downloadPDF.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <span>Save as PDF</span>`;
+        }
+    });
+});
+</script>
+{% endblock %}
