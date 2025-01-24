@@ -50,10 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
-    #third party apps
-    'channels',
-    
+    'django.contrib.staticfiles',    
     #local apps
     'guestbook',
 ]
