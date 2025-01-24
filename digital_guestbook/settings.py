@@ -140,5 +140,5 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_URL = 'guestbook:login'
-LOGIN_REDIRECT_URL = 'guestbook:events'
+# LOGIN_URL = 'guestbook:login'
+# LOGIN_REDIRECT_URL = 'guestbook:events'

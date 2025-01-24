@@ -43,7 +43,7 @@ class EventSearchView(View):
             return JsonResponse({'events': data})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
-@method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
+# @method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
 class LogoutView(View):
     def get(self, request):
         logout(request)
@@ -70,7 +70,7 @@ class LoginView(View):
         messages.error(request, 'Invalid username or password')
         return render(request, self.template_name)
 
-@method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
+# @method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
 class EventsView(View):
     template_name = 'guestbook/event.html'
     
@@ -82,7 +82,7 @@ class EventsView(View):
         }
         return render(request, self.template_name, context)
 
-@method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
+# @method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
 class GuestbookView(View):
 
     template_name = 'guestbook/index.html'
@@ -154,7 +154,7 @@ class GuestbookView(View):
         }
         return render(request, self.template_name, context)
 
-@method_decorator(login_required(login_url='guestbook:login'), name='dispatch')   
+# @method_decorator(login_required(login_url='guestbook:login'), name='dispatch')   
 class MessagesView(View):
     template_name = 'guestbook/messages.html'
     
