@@ -22,7 +22,7 @@
 
 </head>
 
-<body class="bg-white dark:bg-gray-900 h-full overflow-hidden flex flex-col">
+<body class="bg-white dark:bg-gray-900 h-screen overflow-hidden flex flex-col">
     <!-- Page Loader -->
     <div id="page-loader" 
          class="fixed inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm z-50
@@ -36,7 +36,7 @@
 
     {% include 'guestbook/header.html' %}
 
-    <main class="min-h-screen pt-16">
+    <main class="flex-1 pt-16 pb-32">
         {% block content %}{% endblock %}
     </main>
 
@@ -44,20 +44,7 @@
 
     {% block scripts %}{% endblock %}
 
-    <!-- Scroll to Top -->
-    <button id="scrollToTop" 
-            class="fixed bottom-8 right-8 p-3 rounded-full 
-                   bg-blue-500 hover:bg-blue-600 
-                   text-white shadow-lg hover:shadow-xl
-                   transform transition-all duration-300 
-                   opacity-0 translate-y-8 scale-90
-                   hover:scale-100 active:scale-95
-                   focus:outline-none focus:ring-2 focus:ring-blue-400
-                   dark:bg-blue-600 dark:hover:bg-blue-700">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"/>
-        </svg>
-    </button>
+
 
     <script>
         // Page Loader
@@ -68,27 +55,6 @@
             }, 500);
         });
 
-        // Scroll to Top
-        const scrollButton = document.getElementById('scrollToTop');
-        let lastScrollTop = 0;
-        
-        window.onscroll = () => {
-            const st = window.pageYOffset || document.documentElement.scrollTop;
-            if (st > lastScrollTop && st > 200) {
-                scrollButton.classList.replace('opacity-0', 'opacity-100');
-                scrollButton.classList.replace('translate-y-8', 'translate-y-0');
-            } else if (st < 200) {
-                scrollButton.classList.replace('opacity-100', 'opacity-0');
-                scrollButton.classList.replace('translate-y-0', 'translate-y-8');
-            }
-            lastScrollTop = st;
-        };
-        
-        scrollButton.onclick = () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            scrollButton.classList.add('scale-90');
-            setTimeout(() => scrollButton.classList.remove('scale-90'), 300);
-        };
     </script>
 </body>
 
