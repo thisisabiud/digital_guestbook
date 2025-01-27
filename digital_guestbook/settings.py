@@ -25,21 +25,21 @@ SECRET_KEY = 'django-insecure-a0h6)vg9*r_@d&1_ddm&9q@=2xcpxfe1dlgzggjj5earoq0q$9
 
 DEBUG = False
 
-ALLOWED_HOSTS = ["guestbook.akconcepts.co.tz", "127.0.0.1", "localhost"]
+ALLOWED_HOSTS = [
+    'guestbook.akconcepts.co.tz',
+    'localhost',
+    '127.0.0.1'
+]
 
-if not DEBUG:
-    SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-else:
-    SECURE_SSL_REDIRECT = False
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_SECURE = False
-    SECURE_HSTS_SECONDS = 0
+# SSL Settings
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
 
 # Application definition
 
@@ -143,11 +143,4 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-AUTH_USER_MODEL = 'auth.User'
-
-# Authentication settings
-LOGIN_URL = 'guestbook:login'  # URL where users will be redirected if login is required
-LOGIN_REDIRECT_URL = 'guestbook:index'  # URL to redirect after successful login
-LOGOUT_REDIRECT_URL = 'guestbook:login'  # URL to redirect after logout
 
