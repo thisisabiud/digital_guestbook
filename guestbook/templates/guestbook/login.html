@@ -1,79 +1,59 @@
 {% extends "guestbook/base.html" %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 to-white dark:from-gray-900 dark:to-gray-800 pb-8">
-    <div class="w-full max-w-md mx-auto">
-        <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl 
-                    p-8 shadow-2xl border border-gray-200/50 dark:border-gray-700/50">
-            
-            <!-- Header -->
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
-                <p class="text-gray-600 dark:text-gray-400 mt-2">Please sign in to continue</p>
+<main class="flex-1 overflow-y-auto">
+    <div class="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <!-- Logo/Icon -->
+            <div class="text-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                </svg>
+                <h2 class="mt-6 text-3xl font-bold text-gray-900">Sign in to Guestbook</h2>
+                <p class="mt-2 text-sm text-gray-600">Share your message with the event</p>
             </div>
 
-            <!-- Messages -->
+            <!-- Alert Messages -->
             {% if messages %}
                 {% for message in messages %}
-                    <div class="mb-4 p-4 rounded-lg {% if message.tags == 'error' %}bg-red-100 text-red-700{% endif %}">
-                        {{ message }}
+                    <div class="rounded-md bg-red-50 p-4 {% if message.tags == 'error' %}text-red-700{% endif %}">
+                        <p class="text-sm">{{ message }}</p>
                     </div>
                 {% endfor %}
             {% endif %}
 
             <!-- Login Form -->
-            <form method="post" class="space-y-6">
+            <form class="mt-8 space-y-6" method="post">
                 {% csrf_token %}
-                
-                <!-- Username -->
-                <div>
-                    <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Username
-                    </label>
-                    <input type="text" 
-                           name="username" 
-                           id="username" 
-                           required
-                           class="mt-1 block w-full px-4 py-3 rounded-lg
-                                  border border-gray-300 dark:border-gray-600
-                                  bg-white dark:bg-gray-700
-                                  text-gray-900 dark:text-white
-                                  placeholder-gray-400 dark:placeholder-gray-400
-                                  focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400
-                                  focus:border-transparent">
+                <div class="rounded-md shadow-sm space-y-4">
+                    <div>
+                        <label for="username" class="sr-only">Username</label>
+                        <input id="username" 
+                               name="username" 
+                               type="text" 
+                               required 
+                               class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
+                               placeholder="Username">
+                    </div>
+                    <div>
+                        <label for="password" class="sr-only">Password</label>
+                        <input id="password" 
+                               name="password" 
+                               type="password" 
+                               required 
+                               class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
+                               placeholder="Password">
+                    </div>
                 </div>
 
-                <!-- Password -->
                 <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Password
-                    </label>
-                    <input type="password" 
-                           name="password" 
-                           id="password" 
-                           required
-                           class="mt-1 block w-full px-4 py-3 rounded-lg
-                                  border border-gray-300 dark:border-gray-600
-                                  bg-white dark:bg-gray-700
-                                  text-gray-900 dark:text-white
-                                  placeholder-gray-400 dark:placeholder-gray-400
-                                  focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400
-                                  focus:border-transparent">
+                    <button type="submit" 
+                            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Sign in
+                    </button>
                 </div>
-
-                <!-- Submit Button -->
-                <button type="submit" 
-                        class="w-full py-3 px-4 rounded-lg
-                               bg-gradient-to-r from-indigo-600 to-purple-600
-                               hover:from-indigo-500 hover:to-purple-500
-                               text-white font-medium
-                               focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
-                               transform transition-all duration-300
-                               hover:scale-[1.02] active:scale-[0.98]">
-                    Sign in
-                </button>
             </form>
         </div>
     </div>
-</div>
+</main>
 {% endblock %}

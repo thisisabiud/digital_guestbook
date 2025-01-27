@@ -8,6 +8,7 @@ class Event(models.Model):
     name = models.CharField(max_length=200)
     date = models.DateField()
     location = models.CharField(max_length=200)
+    overlay_image = models.ImageField(upload_to='events', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

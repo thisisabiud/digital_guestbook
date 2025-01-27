@@ -2,6 +2,7 @@ import re
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.views import View
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -43,7 +44,7 @@ class EventSearchView(View):
             return JsonResponse({'events': data})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
-# @method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
+@method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
 class LogoutView(View):
     def get(self, request):
         logout(request)
@@ -70,7 +71,7 @@ class LoginView(View):
         messages.error(request, 'Invalid username or password')
         return render(request, self.template_name)
 
-# @method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
+@method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
 class EventsView(View):
     template_name = 'guestbook/event.html'
     
@@ -81,10 +82,10 @@ class EventsView(View):
             'events': events,
         }
         return render(request, self.template_name, context)
+from django.http import JsonResponse
 
-# @method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
+@method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
 class GuestbookView(View):
-
     template_name = 'guestbook/index.html'
     form_class = GuestbookEntryForm
     entries_per_page = 20
@@ -94,7 +95,7 @@ class GuestbookView(View):
         event = get_object_or_404(Event, pk=event_id) if event_id else None
         
         form = self.form_class(initial={'event': event}) if event else self.form_class()
-
+        
         entries = GuestbookEntry.objects.filter(event=event) if event else GuestbookEntry.objects.all()
         entries = entries.order_by('-created_at')
         
@@ -131,7 +132,6 @@ class GuestbookView(View):
                         base64_data = signature.split(',')[1]
                         decoded_data = base64.b64decode(base64_data)
                         
-                        print(decoded_data)
                         # Size validation (max 1MB)
                         if len(decoded_data) > 1024 * 1024:
                             raise ValidationError('Image too large (max 1MB)')
@@ -142,19 +142,20 @@ class GuestbookView(View):
                 
                 entry.save()
                 
-                messages.success(request, 'Thank you for signing our guestbook!')
-                return redirect('guestbook:message', event_id=event_id)
-            
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Thank you for signing our guestbook!',
+                    'redirect_url': reverse('guestbook:message', kwargs={'event_id': event_id}) if event_id else reverse('guestbook:message')
+                })
+            else:
+                raise ValidationError(form.errors)
+                
         except ValidationError as e:
-            messages.error(request, str(e))
-        
-        context = {
-            'form': form,
-            'event': event,
-        }
-        return render(request, self.template_name, context)
-
-# @method_decorator(login_required(login_url='guestbook:login'), name='dispatch')   
+            return JsonResponse({
+                'status': 'error',
+                'error': str(e)
+            }, status=400)
+@method_decorator(login_required(login_url='guestbook:login'), name='dispatch')   
 class MessagesView(View):
     template_name = 'guestbook/messages.html'
     

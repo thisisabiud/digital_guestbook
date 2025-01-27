@@ -140,5 +140,14 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# LOGIN_URL = 'guestbook:login'
-# LOGIN_REDIRECT_URL = 'guestbook:events'
+
+AUTH_USER_MODEL = 'auth.User'
+
+# Authentication settings
+LOGIN_URL = 'guestbook:login'  # URL where users will be redirected if login is required
+LOGIN_REDIRECT_URL = 'guestbook:index'  # URL to redirect after successful login
+LOGOUT_REDIRECT_URL = 'guestbook:login'  # URL to redirect after logout
+
+SESSION_COOKIE_AGE = 1209600  # Session duration in seconds (2 weeks)
+SESSION_COOKIE_SECURE = True  # Use secure cookies in production
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Session expires when browser closes
