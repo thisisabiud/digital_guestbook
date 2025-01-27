@@ -23,20 +23,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-a0h6)vg9*r_@d&1_ddm&9q@=2xcpxfe1dlgzggjj5earoq0q$9'
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
+
 ALLOWED_HOSTS = ["guestbook.akconcepts.co.tz", "127.0.0.1", "localhost"]
-# Enable SSL/HTTPS settings
-SECURE_SSL_REDIRECT = True
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
 
-SECURE_HSTS_SECONDS = 31536000
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-
-
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+else:
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SECURE_HSTS_SECONDS = 0
 
 # Application definition
 
@@ -148,6 +151,3 @@ LOGIN_URL = 'guestbook:login'  # URL where users will be redirected if login is 
 LOGIN_REDIRECT_URL = 'guestbook:index'  # URL to redirect after successful login
 LOGOUT_REDIRECT_URL = 'guestbook:login'  # URL to redirect after logout
 
-SESSION_COOKIE_AGE = 1209600  # Session duration in seconds (2 weeks)
-SESSION_COOKIE_SECURE = True  # Use secure cookies in production
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Session expires when browser closes
