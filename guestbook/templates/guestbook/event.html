@@ -1,4 +1,6 @@
 {% extends 'guestbook/base.html' %}
+{% load tz %}
+{% now "Y-m-d" as current_date %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
@@ -14,6 +16,7 @@
         {% if events %}
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {% for event in events %}
+                {% with event_date=event.date|date:"Y-m-d" %}
                     <a href="{% url 'guestbook:message' event.id %}" 
                        class="group relative bg-white dark:bg-gray-800 rounded-xl 
                               shadow-lg hover:shadow-xl
@@ -24,11 +27,11 @@
                         
                         <!-- Event Status Indicator -->
                         <div class="absolute top-4 right-4">
-                            {% if event.date|date:"Y-m-d" < now|date:"Y-m-d" %}
+                            {% if event_date < current_date %}
                                 <span class="px-3 py-1 bg-gray-100 text-gray-800 text-sm font-medium rounded-full">
                                     Past
                                 </span>
-                            {% elif event.date|date:"Y-m-d" == now|date:"Y-m-d" %}
+                            {% elif event_date == current_date %}
                                 <span class="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full 
                                            animate-pulse">
                                     Today
@@ -73,6 +76,7 @@
                             </div>
                         </div>
                     </a>
+                {% endwith %}
                 {% endfor %}
             </div>
         {% else %}
