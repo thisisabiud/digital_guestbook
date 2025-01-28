@@ -3,96 +3,206 @@
 {% now "Y-m-d" as current_date %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-6xl mx-auto space-y-8">
-        <div class="text-center space-y-4">
-            <h1 class="text-4xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 
-                       bg-clip-text text-transparent">
-                Events
-            </h1>
-            <p class="text-gray-600 dark:text-gray-400">Select an event to sign the guestbook</p>
+<div class="container mx-auto px-4 py-12">
+    <div class="max-w-6xl mx-auto space-y-10">
+        <!-- Header Section -->
+        <div class="text-center space-y-6">
+            <div class="relative inline-block">
+                <h1 class="text-5xl font-black bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 
+                           bg-clip-text text-transparent pb-2">
+                    Event Guestbooks
+                </h1>
+                <div class="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 rounded-full"></div>
+            </div>
+            <p class="text-lg text-gray-600 dark:text-gray-400">Share your memories and messages with our digital guestbooks</p>
         </div>
 
         {% if events %}
-            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {% for event in events %}
-                {% with event_date=event.date|date:"Y-m-d" %}
-                    <a href="{% url 'guestbook:message' event.id %}" 
-                       class="group relative bg-white dark:bg-gray-800 rounded-xl 
-                              shadow-lg hover:shadow-xl
-                              transition-all duration-300 
-                              transform hover:-translate-y-1
-                              border border-gray-100 dark:border-gray-700
-                              overflow-hidden">
-                        
-                        <!-- Event Status Indicator -->
-                        <div class="absolute top-4 right-4">
-                            {% if event_date < current_date %}
-                                <span class="px-3 py-1 bg-gray-100 text-gray-800 text-sm font-medium rounded-full">
-                                    Past
-                                </span>
-                            {% elif event_date == current_date %}
-                                <span class="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full 
-                                           animate-pulse">
-                                    Today
-                                </span>
-                            {% else %}
-                                <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-                                    Upcoming
-                                </span>
-                            {% endif %}
-                        </div>
+        <!-- Event Filters with improved active states -->
+        <div class="flex flex-wrap gap-4 justify-center">
+            <button class="filter-btn px-6 py-2.5 rounded-full text-sm font-semibold 
+                         transition-all duration-300 ease-in-out
+                         border-2 border-transparent
+                         hover:shadow-md
+                         data-[state=active]:bg-blue-600 data-[state=active]:text-white
+                         data-[state=active]:border-blue-700
+                         bg-gray-100 text-gray-700 hover:bg-gray-200
+                         dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                    data-state="active">
+                All Events
+            </button>
+            <button class="filter-btn px-6 py-2.5 rounded-full text-sm font-semibold 
+                         transition-all duration-300 ease-in-out
+                         border-2 border-transparent
+                         hover:shadow-md
+                         data-[state=active]:bg-green-600 data-[state=active]:text-white
+                         data-[state=active]:border-green-700
+                         bg-gray-100 text-gray-700 hover:bg-gray-200
+                         dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                Today
+            </button>
+            <button class="filter-btn px-6 py-2.5 rounded-full text-sm font-semibold 
+                         transition-all duration-300 ease-in-out
+                         border-2 border-transparent
+                         hover:shadow-md
+                         data-[state=active]:bg-purple-600 data-[state=active]:text-white
+                         data-[state=active]:border-purple-700
+                         bg-gray-100 text-gray-700 hover:bg-gray-200
+                         dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                Upcoming
+            </button>
+            <button class="filter-btn px-6 py-2.5 rounded-full text-sm font-semibold 
+                         transition-all duration-300 ease-in-out
+                         border-2 border-transparent
+                         hover:shadow-md
+                         data-[state=active]:bg-gray-600 data-[state=active]:text-white
+                         data-[state=active]:border-gray-700
+                         bg-gray-100 text-gray-700 hover:bg-gray-200
+                         dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                Past
+            </button>
+        </div>
 
-                        <div class="p-6 space-y-4">
-                            <div class="space-y-2">
-                                <h2 class="text-xl font-bold text-gray-900 dark:text-white
-                                         group-hover:text-blue-600 dark:group-hover:text-blue-400 
-                                         transition-colors">
-                                    {{ event.name }}
-                                </h2>
-                                <time class="text-sm text-gray-600 dark:text-gray-400">
-                                    {{ event.date|date:"F d, Y" }}
-                                </time>
-                            </div>
-                            
-                            <div class="flex items-center text-gray-600 dark:text-gray-400">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                </svg>
-                                {{ event.location }}
-                            </div>
+        <!-- Events Grid with improved card separation -->
+        <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {% for event in events %}
+            {% with event_date=event.date|date:"Y-m-d" %}
+            <a href="{% url 'guestbook:message' event.id %}" 
+               class="group relative bg-white dark:bg-gray-800 rounded-2xl 
+                      shadow-md hover:shadow-2xl
+                      transition-all duration-500 
+                      transform hover:-translate-y-2
+                      border border-gray-200 dark:border-gray-700
+                      overflow-hidden">
+                
+                <!-- Decorative Elements -->
+                <div class="absolute inset-0 bg-gradient-to-br from-white/80 to-transparent dark:from-white/5 dark:to-transparent"></div>
+                <div class="absolute top-0 left-0 w-24 h-1.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-br-xl"></div>
+                
+                <!-- Event Status with improved visibility -->
+                <div class="absolute top-4 right-4 z-10">
+                    {% if event_date < current_date %}
+                    <span class="px-4 py-2 bg-gray-900/90 text-white text-sm font-medium rounded-full
+                               shadow-lg backdrop-blur-sm">
+                        Past Event
+                    </span>
+                    {% elif event_date == current_date %}
+                    <span class="px-4 py-2 bg-green-500/90 text-white text-sm font-medium rounded-full
+                               shadow-lg backdrop-blur-sm animate-pulse">
+                        Happening Today
+                    </span>
+                    {% else %}
+                    <span class="px-4 py-2 bg-blue-500/90 text-white text-sm font-medium rounded-full
+                               shadow-lg backdrop-blur-sm">
+                        Upcoming
+                    </span>
+                    {% endif %}
+                </div>
 
-                            <div class="pt-4 border-t border-gray-100 dark:border-gray-700 
-                                      text-sm text-gray-500 dark:text-gray-400">
-                                <div class="flex justify-between">
-                                    <span>Created: {{ event.created_at|date:"M d, Y" }}</span>
-                                    {% if event.updated_at != event.created_at %}
-                                        <span>Updated: {{ event.updated_at|date:"M d, Y" }}</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                {% endwith %}
-                {% endfor %}
-            </div>
+                <div class="relative p-8 space-y-6">
+                    <!-- Event Title & Date -->
+                    <div class="space-y-4">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white
+                                 group-hover:text-blue-600 dark:group-hover:text-blue-400 
+                                 transition-colors duration-300">
+                            {{ event.name }}
+                        </h2>
+                        <time class="inline-block px-4 py-1.5 bg-gray-100 dark:bg-gray-700 
+                                   rounded-full text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {{ event.date|date:"F d, Y" }}
+                        </time>
+                    </div>
+                    
+                    <!-- Location with improved visibility -->
+                    <div class="flex items-center text-gray-700 dark:text-gray-300 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-300">
+                        <svg class="w-5 h-5 mr-2 transition-transform duration-500 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        {{ event.location }}
+                    </div>
+
+                    <!-- Metadata with improved separation -->
+                    <div class="pt-6 mt-6 border-t border-gray-200 dark:border-gray-700
+                              text-sm text-gray-600 dark:text-gray-400
+                              flex justify-between items-center">
+                        <span class="flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            {{ event.created_at|date:"M d, Y" }}
+                        </span>
+                        {% if event.updated_at != event.created_at %}
+                        <span class="flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            {{ event.updated_at|date:"M d, Y" }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </a>
+            {% endwith %}
+            {% endfor %}
+        </div>
         {% else %}
-            <div class="text-center py-16 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
-                <svg class="w-16 h-16 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+        <!-- Empty State with improved visibility -->
+        <div class="text-center py-20 bg-white dark:bg-gray-800 rounded-2xl shadow-lg
+                    border border-gray-200 dark:border-gray-700">
+            <div class="relative">
+                <svg class="w-24 h-24 mx-auto text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
                           d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                 </svg>
-                <p class="mt-4 text-gray-500 dark:text-gray-400 text-lg">No events scheduled yet.</p>
-                <p class="mt-2 text-gray-400 dark:text-gray-500">Check back later for upcoming events.</p>
             </div>
+            <h3 class="mt-6 text-xl font-semibold text-gray-900 dark:text-white">No Events Yet</h3>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">Check back soon for upcoming events and guestbooks.</p>
+            <p class="mt-4 text-sm text-gray-500 dark:text-gray-500">We're working on planning some amazing events!</p>
+        </div>
         {% endif %}
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const eventCards = document.querySelectorAll('.grid > a');
 
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Update active state
+            filterButtons.forEach(btn => {
+                btn.dataset.state = '';
+            });
+            button.dataset.state = 'active';
+
+            // Filter events with smooth transitions
+            const filter = button.textContent.trim().toLowerCase();
+            eventCards.forEach(card => {
+                const status = card.querySelector('span').textContent.trim().toLowerCase();
+                card.style.transition = 'all 0.3s ease-in-out';
+                
+                if (filter === 'all events' || status.includes(filter)) {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                    card.style.display = 'block';
+                } else {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        card.style.display = 'none';
+                    }, 300);
+                }
+            });
+        });
+    });
+});
+</script>
 {% endblock %}

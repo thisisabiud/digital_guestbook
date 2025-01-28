@@ -1,116 +1,338 @@
 {% extends 'guestbook/base.html' %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <!-- Header Section -->
-    <div class="flex flex-col md:flex-row justify-between items-center mb-8">
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-4 md:mb-0">Guest Messages</h1>
+<div class="container mx-auto px-4 pt-4">
+    <div class="max-w-7xl mx-auto relative">
+        <div id="messageBoard" class="relative aspect-[1.414/1] w-full bg-white rounded-lg shadow-2xl">
+            <div class="absolute inset-0 p-8 bg-gradient-to-br from-gray-50 via-white to-gray-100">
+                <div class="absolute inset-0 border-[16px] border-double border-gray-200"></div>
 
-        <!-- Download Buttons -->
-        <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-            <button id="downloadPNG" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors shadow-lg hover:shadow-xl">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                </svg>
-                <span>Save as PNG</span>
-            </button>
-            <button id="downloadPDF" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors shadow-lg hover:shadow-xl">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                <span>Save as PDF</span>
-            </button>
-        </div>
-    </div>
+                {% if event.overlay_image %}
+                <img src="{{ event.overlay_image.url }}" alt="Overlay Image"
+                    class="absolute inset-0 w-full h-full object-cover opacity-5 pointer-events-none">
+                {% endif %}
 
-    <!-- Message Board -->
-    <div id="messageBoard" class="relative h-full w-full max-w-6xl mx-auto overflow-hidden border-2 border-gray-300 rounded-xl shadow-lg bg-white">
-        <!-- Overlay Image -->
-        <img src="{{ event.overlay_image.url }}" alt="Overlay Image" class="absolute inset-0 w-full h-full object-cover opacity-9 pointer-events-none">
-
-        <!-- Messages -->
-        <div class="relative grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-8">
-            {% for message in messages %}
-            <!-- Example Message -->
-            <div class="message-item relative p-4 bg-white shadow-md rounded-lg transform hover:scale-105 transition-transform duration-300">
-                <img src="{{message.signature_base64}}" alt="Guest message" class="w-full h-auto object-contain rounded-md">
-                <div class="mt-2 text-right text-xs text-gray-400">{{ message.created_at|date:"Y-m-d H:i:s" }}</div>
+                <div class="relative w-full h-full overflow-hidden p-12">
+                    <div id="messagesContainer" class="relative w-full h-full">
+                        {% for message in messages %}
+                        <div class="message-item absolute transition-all duration-500 hover:z-50 hover:scale-110 cursor-pointer opacity-0 hover:shadow-xl"
+                            data-index="{{ forloop.counter0 }}">
+                            <div class="relative">
+                                <img src="{{message.signature_base64}}" alt="Guest message"
+                                    class="w-full h-auto object-contain filter contrast-150">
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
-            <!-- Repeat this block for each message dynamically -->
-            {% endfor %}
+
+            <!-- Decorative corners with improved design -->
+            <div class="absolute top-0 left-0 w-20 h-20 border-t-[10px] border-l-[10px] border-gray-200 rounded-tl-xl"></div>
+            <div class="absolute top-0 right-0 w-20 h-20 border-t-[10px] border-r-[10px] border-gray-200 rounded-tr-xl"></div>
+            <div class="absolute bottom-0 left-0 w-20 h-20 border-b-[10px] border-l-[10px] border-gray-200 rounded-bl-xl"></div>
+            <div class="absolute bottom-0 right-0 w-20 h-20 border-b-[10px] border-r-[10px] border-gray-200 rounded-br-xl"></div>
+
+            <!-- Export controls - will be hidden during capture -->
+            <div id="exportControls" class="absolute top-4 right-4 z-50">
+                <div class="relative">
+                    <button id="menuButton"
+                        class="p-3 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:rotate-90 group">
+                        <svg class="w-5 h-5 text-gray-700 group-hover:text-blue-600" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                        </svg>
+                    </button>
+                    <div id="dropdownMenu"
+                        class="hidden absolute right-0 mt-2 w-52 bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-100 overflow-hidden transform origin-top-right transition-all duration-200">
+                        <button id="downloadPNG" class="export-button w-full px-4 py-3.5 text-left hover:bg-blue-50 flex items-center space-x-3 text-sm group transition-all duration-200">
+                            <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 group-hover:bg-blue-200 transition-colors duration-200">
+                                <svg class="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M4 15v4c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2v-4" stroke-width="2" stroke-linecap="round"/>
+                                    <path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M7 8h10M7 4h10" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+                                </svg>
+                            </span>
+                            <div class="flex flex-col">
+                                <span class="text-gray-700 font-medium group-hover:text-gray-900">Save as PNG</span>
+                            </div>
+                        </button>
+                        
+                        <button id="downloadPDF" class="export-button w-full px-4 py-3.5 text-left hover:bg-red-50 flex items-center space-x-3 text-sm group transition-all duration-200 border-t border-gray-100">
+                            <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 group-hover:bg-red-200 transition-colors duration-200">
+                                <svg class="w-4 h-4 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <rect x="4" y="15" width="16" height="6" rx="2" stroke-width="2"/>
+                                    <path d="M8 18h8" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+                                </svg>
+                            </span>
+                            <div class="flex flex-col">
+                                <span class="text-gray-700 font-medium group-hover:text-gray-900">Save as PDF</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const board = document.getElementById('messageBoard');
-    let messages = board.querySelectorAll('.message-item');
-
-    // Download Functions
+    document.addEventListener('DOMContentLoaded', function () {
+    // DOM Elements
+    const menuButton = document.getElementById('menuButton');
+    const dropdownMenu = document.getElementById('dropdownMenu');
     const downloadPNG = document.getElementById('downloadPNG');
     const downloadPDF = document.getElementById('downloadPDF');
+    const board = document.getElementById('messageBoard');
+    const container = document.getElementById('messagesContainer');
+    const messages = Array.from(container.querySelectorAll('.message-item'));
+    const exportControls = document.getElementById('exportControls');
 
-    downloadPNG.addEventListener('click', async () => {
-        downloadPNG.disabled = true;
-        downloadPNG.innerHTML = '<span class="animate-spin">↻</span> Generating...';
+    // Menu functionality
+    menuButton.addEventListener('click', () => {
+        toggleDropdown();
+    });
 
+    function toggleDropdown() {
+        dropdownMenu.classList.toggle('hidden');
+        dropdownMenu.classList.toggle('scale-95');
+        dropdownMenu.classList.toggle('opacity-0');
+
+        if (!dropdownMenu.classList.contains('hidden')) {
+            setTimeout(() => {
+                dropdownMenu.classList.remove('scale-95', 'opacity-0');
+                dropdownMenu.classList.add('scale-100', 'opacity-100');
+            }, 0);
+        }
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (event) => {
+        if (!menuButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+            closeDropdown();
+        }
+    });
+
+    function closeDropdown() {
+        dropdownMenu.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            dropdownMenu.classList.add('hidden');
+        }, 200);
+    }
+
+    // Grid layout functions
+    function createGridLayout() {
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
+        const padding = 40;
+        const minSpacing = 20; // Minimum space between items
+
+        const availableWidth = containerWidth - (padding * 2);
+        const availableHeight = containerHeight - (padding * 2);
+
+        // Calculate optimal grid size based on number of messages
+        const totalMessages = messages.length;
+        const aspectRatio = availableWidth / availableHeight;
+        let cols = Math.ceil(Math.sqrt(totalMessages * aspectRatio));
+        let rows = Math.ceil(totalMessages / cols);
+
+        // Adjust if we have too few items for the calculated grid
+        if (cols * rows > totalMessages * 2) {
+            cols = Math.ceil(Math.sqrt(totalMessages));
+            rows = Math.ceil(totalMessages / cols);
+        }
+
+        const cellWidth = availableWidth / cols;
+        const cellHeight = availableHeight / rows;
+        const messageSize = Math.min(cellWidth, cellHeight) - minSpacing;
+
+        const positions = [];
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                positions.push({
+                    x: padding + (col * cellWidth) + (cellWidth - messageSize) / 2,
+                    y: padding + (row * cellHeight) + (cellHeight - messageSize) / 2,
+                    width: messageSize,
+                    height: messageSize
+                });
+            }
+        }
+
+        return positions;
+    }
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function positionMessages() {
+        // Reset all messages
+        messages.forEach(msg => {
+            msg.style.opacity = '0';
+            msg.style.transform = 'none';
+        });
+
+        const positions = createGridLayout();
+        const shuffledPositions = shuffleArray([...positions]);
+        const usablePositions = shuffledPositions.slice(0, messages.length);
+
+        messages.forEach((msg, index) => {
+            if (index < usablePositions.length) {
+                const pos = usablePositions[index];
+                const randomRotation = Math.random() * 20 - 10; // Random rotation between -10 and 10 degrees
+                const randomScale = 0.9 + Math.random() * 0.2; // Random scale between 0.9 and 1.1
+
+                msg.style.width = `${pos.width}px`;
+                msg.style.maxWidth = `${pos.width}px`;
+                msg.style.transform = `translate(${pos.x}px, ${pos.y}px) rotate(${randomRotation}deg) scale(${randomScale})`;
+
+                // Staggered animation
+                setTimeout(() => {
+                    msg.style.opacity = '1';
+                }, index * 50);
+            }
+        });
+    }
+
+    // Export preparation and cleanup
+    async function prepareForCapture() {
+        exportControls.style.display = 'none';
+        // Wait for any transitions to complete
+        return new Promise(resolve => setTimeout(resolve, 150));
+    }
+
+    async function restoreAfterCapture() {
+        exportControls.style.display = 'block';
+    }
+
+    // Button state management
+    function updateButtonState(button, isLoading) {
+        const originalContent = button.innerHTML;
+        if (isLoading) {
+            button.disabled = true;
+            const loadingContent = `
+                <div class="flex items-center space-x-3">
+                    <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100">
+                        <svg class="w-4 h-4 animate-spin text-gray-600" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                        </svg>
+                    </span>
+                    <div class="flex flex-col">
+                        <span class="text-gray-600 font-medium">Processing...</span>
+                    </div>
+                </div>
+            `;
+            button.innerHTML = loadingContent;
+        } else {
+            button.disabled = false;
+            button.innerHTML = originalContent;
+        }
+    }
+
+    // Image generation
+    async function generateImage() {
+        await prepareForCapture();
         try {
             const canvas = await html2canvas(board, {
                 scale: 2,
-                backgroundColor: '#FFFFFF'
+                backgroundColor: '#FFFFFF',
+                logging: false,
+                allowTaint: true,
+                useCORS: true,
+                onclone: function(clonedDoc) {
+                    // Additional cleanup of cloned element if needed
+                    const clonedBoard = clonedDoc.getElementById('messageBoard');
+                    const controls = clonedBoard.querySelector('#exportControls');
+                    if (controls) controls.remove();
+                }
             });
+            return canvas;
+        } finally {
+            await restoreAfterCapture();
+        }
+    }
 
+    // Download handlers
+    downloadPNG.addEventListener('click', async () => {
+        updateButtonState(downloadPNG, true);
+        try {
+            const canvas = await generateImage();
             const link = document.createElement('a');
-            link.download = 'guestbook-messages.png';
-            link.href = canvas.toDataURL('image/png');
+            link.download = `guestbook-memories-${new Date().toISOString().split('T')[0]}.png`;
+            link.href = canvas.toDataURL('image/png', 1.0);
             link.click();
         } catch (error) {
             console.error('Error generating PNG:', error);
+            alert('Failed to generate PNG. Please try again.');
         } finally {
-            downloadPNG.disabled = false;
-            downloadPNG.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg><span>Save as PNG</span>';
+            updateButtonState(downloadPNG, false);
+            closeDropdown();
         }
     });
 
     downloadPDF.addEventListener('click', async () => {
-        downloadPDF.disabled = true;
-        downloadPDF.innerHTML = '<span class="animate-spin">↻</span> Generating...';
-
+        updateButtonState(downloadPDF, true);
         try {
-            const canvas = await html2canvas(board, {
-                scale: 2,
-                backgroundColor: '#FFFFFF'
-            });
-
-            const imgData = canvas.toDataURL('image/png');
+            const canvas = await generateImage();
+            const imgData = canvas.toDataURL('image/png', 1.0);
             const { jsPDF } = window.jspdf;
 
             const pdf = new jsPDF({
                 orientation: 'landscape',
                 unit: 'px',
-                format: [canvas.width, canvas.height]
+                format: [canvas.width, canvas.height],
+                hotfixes: ['px_scaling']
             });
 
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save('guestbook-messages.pdf');
+            pdf.addImage(imgData, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
+            pdf.save(`guestbook-memories-${new Date().toISOString().split('T')[0]}.pdf`);
         } catch (error) {
             console.error('Error generating PDF:', error);
             alert('Failed to generate PDF. Please try again.');
         } finally {
-            downloadPDF.disabled = false;
-            downloadPDF.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><span>Save as PDF</span>';
+            updateButtonState(downloadPDF, false);
+            closeDropdown();
         }
+    });
+
+    // Initial load handling
+    let loadedImages = 0;
+    messages.forEach(msg => {
+        const img = msg.querySelector('img');
+        if (img.complete) {
+            loadedImages++;
+            if (loadedImages === messages.length) {
+                positionMessages();
+            }
+        } else {
+            img.onload = () => {
+                loadedImages++;
+                if (loadedImages === messages.length) {
+                    positionMessages();
+                }
+            };
+        }
+    });
+
+    // Resize handling with debounce
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            positionMessages();
+        }, 250);
     });
 });
 </script>
-
 {% endblock %}
