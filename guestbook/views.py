@@ -76,7 +76,7 @@ class LoginView(View):
 @method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
 class EventsView(View):
     template_name = 'guestbook/event.html'
-    items_per_page = 1  # 3x3 grid layout
+    items_per_page = 9 
 
     def get(self, request, *args, **kwargs):
         event_list = Event.objects.all().order_by('-date')
