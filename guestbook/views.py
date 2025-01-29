@@ -1,5 +1,7 @@
 import re
 from django.conf import settings
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -74,15 +76,33 @@ class LoginView(View):
 @method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
 class EventsView(View):
     template_name = 'guestbook/event.html'
-    
+    items_per_page = 1  # 3x3 grid layout
+
     def get(self, request, *args, **kwargs):
-        events = Event.objects.all().order_by('date')
+        event_list = Event.objects.all().order_by('-date')
+        
+        paginator = Paginator(event_list, self.items_per_page)
+        page = request.GET.get('page', 1)
+
+        try:
+            events = paginator.page(page)
+        except PageNotAnInteger:
+            events = paginator.page(1)
+        except EmptyPage:
+            events = paginator.page(paginator.num_pages)
+
+        # Calculate pagination range with ellipsis
+        page_range = events.paginator.get_elided_page_range(
+            events.number,
+            on_each_side=2,
+            on_ends=1
+        )
 
         context = {
             'events': events,
+            'page_range': page_range,
         }
         return render(request, self.template_name, context)
-from django.http import JsonResponse
 
 @method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
 class GuestbookView(View):
