@@ -1,22 +1,22 @@
 {% extends 'guestbook/base.html' %}
 
 {% block content %}
-    <!-- Main Content -->
-    <main class="min-h-[calc(100vh-10rem)] p-4 sm:p-6 sm:mb-24 lg:p-8">
-        <div class="max-w-6xl mx-auto h-full bg-white rounded-lg shadow-lg">
-            <div class="p-6 h-full flex flex-col">
-                <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">
+    <!-- Main Content - Adjusted padding and height calculations -->
+    <div class="h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8">
+        <div class="h-full max-w-6xl mx-auto bg-white rounded-lg shadow-lg flex flex-col">
+            <div class="p-6 flex flex-col h-full">
+                <h2 class="text-2xl font-bold text-center text-gray-800 mb-4 flex-none">
                     Leave Your Message
                 </h2>
                 
-                <form id="guestbookForm" method="POST" class="h-full flex flex-col">
+                <form id="guestbookForm" method="POST" class="flex flex-col flex-grow h-full">
                     {% csrf_token %}
                     
                     <!-- Hidden input for signature data -->
                     <input type="hidden" name="signature_base64" id="signatureInput">
                     
-                    <!-- Pen Controls -->
-                    <div class="flex items-center gap-4 mb-4">
+                    <!-- Pen Controls - Made more compact -->
+                    <div class="flex items-center gap-4 mb-4 flex-none">
                         <label class="text-sm font-medium text-gray-700">Pen Size:</label>
                         <div class="flex gap-2">
                             <button type="button" onclick="setPenSize(1)" class="w-8 h-8 rounded-full border border-gray-300 hover:bg-gray-50 flex items-center justify-center" id="size1">
@@ -34,14 +34,16 @@
                         </div>
                     </div>
                     
+                    <!-- Canvas Container - Made to fill available space -->
                     <div class="relative border rounded-lg bg-white flex-grow mb-4">
                         <canvas 
                             id="signatureCanvas"
-                            class="w-full h-full bg-gray-100 shadow-inner touch-none cursor-crosshair"
+                            class="absolute inset-0 w-full h-full bg-gray-100 shadow-inner touch-none cursor-crosshair"
                         ></canvas>
                     </div>
 
-                    <div class="flex gap-4 justify-end">
+                    <!-- Buttons - Made more compact -->
+                    <div class="flex gap-4 justify-end flex-none">
                         <button 
                             type="button"
                             onclick="clearCanvas()"
@@ -68,8 +70,9 @@
                 </form>
             </div>
         </div>
-    </main>
+    </div>
 {% endblock %}
+
 
 {% block scripts %}
 <!-- Include SweetAlert2 -->
