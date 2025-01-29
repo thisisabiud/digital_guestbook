@@ -87,15 +87,39 @@
     let currentPenSize = 2;
 
     function resizeCanvas() {
+        // Store the current canvas content
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        tempCtx.drawImage(canvas, 0, 0);
+        
+        // Resize the main canvas
         const parent = canvas.parentElement;
         canvas.width = parent.clientWidth;
         canvas.height = parent.clientHeight;
         
-        // Reset canvas styles after resize
+        // Reset canvas styles
         ctx.strokeStyle = '#000';
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
         ctx.lineWidth = currentPenSize;
+        
+        // Restore the content
+        ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 0, 0, canvas.width, canvas.height);
+    }
+
+    // Debounce function to limit resize events
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
     }
 
     function setPenSize(size) {
@@ -116,7 +140,8 @@
 
     // Initialize canvas
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    // Use debounced version of resizeCanvas for the resize event
+    window.addEventListener('resize', debounce(resizeCanvas, 250));
     setPenSize(2); // Set default pen size
 
     // Drawing functions
