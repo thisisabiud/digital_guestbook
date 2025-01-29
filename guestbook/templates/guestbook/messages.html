@@ -8,18 +8,32 @@
                 <div class="absolute inset-0 border-[16px] border-double border-gray-200"></div>
 
                 {% if event.overlay_image %}
-                <img src="{{ event.overlay_image.url }}" alt="Overlay Image"
-                    class="absolute inset-0 w-full h-full object-cover opacity-5 pointer-events-none">
+                <img 
+                    src="{{ event.overlay_image.url }}" 
+                    alt="Background overlay"
+                    class="absolute inset-0 w-full h-full object-cover opacity-5 pointer-events-none"
+                    loading="lazy"
+                    decoding="async"
+                >
                 {% endif %}
 
                 <div class="relative w-full h-full overflow-hidden p-12">
                     <div id="messagesContainer" class="relative w-full h-full">
                         {% for message in messages %}
-                        <div class="message-item absolute transition-all duration-500 hover:z-50 hover:scale-110 cursor-pointer opacity-0 hover:shadow-xl"
-                            data-index="{{ forloop.counter0 }}">
+                        <div 
+                            class="message-item absolute transition-transform duration-500 ease-out hover:z-50 hover:scale-110 cursor-pointer opacity-0 hover:shadow-xl will-change-transform"
+                            data-index="{{ forloop.counter0 }}"
+                            role="img"
+                            aria-label="Guest message {{ forloop.counter }}"
+                        >
                             <div class="relative">
-                                <img src="{{message.signature_base64}}" alt="Guest message"
-                                    class="w-full h-auto object-contain filter contrast-150">
+                                <img 
+                                    src="{{message.signature_base64}}" 
+                                    alt="Guest message {{ forloop.counter }}"
+                                    class="w-full h-auto object-contain filter contrast-150"
+                                    loading="lazy"
+                                    decoding="async"
+                                >
                             </div>
                         </div>
                         {% endfor %}
@@ -27,31 +41,38 @@
                 </div>
             </div>
 
-            <!-- Decorative corners with improved design -->
+            <!-- Decorative corners -->
             <div class="absolute top-0 left-0 w-20 h-20 border-t-[10px] border-l-[10px] border-gray-200 rounded-tl-xl"></div>
             <div class="absolute top-0 right-0 w-20 h-20 border-t-[10px] border-r-[10px] border-gray-200 rounded-tr-xl"></div>
             <div class="absolute bottom-0 left-0 w-20 h-20 border-b-[10px] border-l-[10px] border-gray-200 rounded-bl-xl"></div>
             <div class="absolute bottom-0 right-0 w-20 h-20 border-b-[10px] border-r-[10px] border-gray-200 rounded-br-xl"></div>
 
-            <!-- Export controls - will be hidden during capture -->
+            <!-- Export controls -->
             <div id="exportControls" class="absolute top-4 right-4 z-50">
                 <div class="relative">
-                    <button id="menuButton"
-                        class="p-3 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:rotate-90 group">
-                        <svg class="w-5 h-5 text-gray-700 group-hover:text-blue-600" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                    <button 
+                        id="menuButton"
+                        class="p-3 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:rotate-90 group focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        aria-expanded="false"
+                        aria-haspopup="true"
+                        aria-controls="dropdownMenu"
+                    >
+                        <span class="sr-only">Open export menu</span>
+                        <svg class="w-5 h-5 text-gray-700 group-hover:text-blue-600" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                         </svg>
                     </button>
-                    <div id="dropdownMenu"
-                        class="hidden absolute right-0 mt-2 w-52 bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-100 overflow-hidden transform origin-top-right transition-all duration-200">
-                        <button id="downloadPNG" class="export-button w-full px-4 py-3.5 text-left hover:bg-blue-50 flex items-center space-x-3 text-sm group transition-all duration-200">
+                    <div 
+                        id="dropdownMenu"
+                        class="hidden absolute right-0 mt-2 w-52 bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-100 overflow-hidden transform origin-top-right transition-all duration-200"
+                        role="menu"
+                        aria-orientation="vertical"
+                        aria-labelledby="menuButton"
+                    >
+                        <button id="downloadPNG" class="export-button w-full px-4 py-3.5 text-left hover:bg-blue-50 flex items-center space-x-3 text-sm group transition-all duration-200" role="menuitem">
                             <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 group-hover:bg-blue-200 transition-colors duration-200">
-                                <svg class="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M4 15v4c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2v-4" stroke-width="2" stroke-linecap="round"/>
-                                    <path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path d="M7 8h10M7 4h10" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+                                <svg class="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                    <path d="M4 15v4c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2v-4M12 3v12m0 0l-4-4m4 4l4-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
                             </span>
                             <div class="flex flex-col">
@@ -59,12 +80,10 @@
                             </div>
                         </button>
                         
-                        <button id="downloadPDF" class="export-button w-full px-4 py-3.5 text-left hover:bg-red-50 flex items-center space-x-3 text-sm group transition-all duration-200 border-t border-gray-100">
+                        <button id="downloadPDF" class="export-button w-full px-4 py-3.5 text-left hover:bg-red-50 flex items-center space-x-3 text-sm group transition-all duration-200 border-t border-gray-100" role="menuitem">
                             <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 group-hover:bg-red-200 transition-colors duration-200">
-                                <svg class="w-4 h-4 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M12 3v12m0 0l-4-4m4 4l4-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <rect x="4" y="15" width="16" height="6" rx="2" stroke-width="2"/>
-                                    <path d="M8 18h8" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+                                <svg class="w-4 h-4 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                    <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 15h16v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
                             </span>
                             <div class="flex flex-col">
@@ -75,6 +94,14 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Loading indicator -->
+<div id="loadingOverlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="flex flex-col items-center space-y-4">
+        <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+        <p class="text-gray-600 font-medium">Processing your download...</p>
     </div>
 </div>
 {% endblock %}
