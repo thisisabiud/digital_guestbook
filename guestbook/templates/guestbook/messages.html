@@ -109,257 +109,266 @@
 {% block scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- Your existing HTML code remains the same -->
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-    // DOM Elements
-    const menuButton = document.getElementById('menuButton');
-    const dropdownMenu = document.getElementById('dropdownMenu');
-    const downloadPNG = document.getElementById('downloadPNG');
-    const downloadPDF = document.getElementById('downloadPDF');
-    const board = document.getElementById('messageBoard');
-    const container = document.getElementById('messagesContainer');
-    const messages = Array.from(container.querySelectorAll('.message-item'));
-    const exportControls = document.getElementById('exportControls');
-
-    // Menu functionality
-    menuButton.addEventListener('click', () => {
-        toggleDropdown();
-    });
-
-    function toggleDropdown() {
-        dropdownMenu.classList.toggle('hidden');
-        dropdownMenu.classList.toggle('scale-95');
-        dropdownMenu.classList.toggle('opacity-0');
-
-        if (!dropdownMenu.classList.contains('hidden')) {
-            setTimeout(() => {
-                dropdownMenu.classList.remove('scale-95', 'opacity-0');
-                dropdownMenu.classList.add('scale-100', 'opacity-100');
-            }, 0);
-        }
-    }
-
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (event) => {
-        if (!menuButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
-            closeDropdown();
-        }
-    });
-
-    function closeDropdown() {
-        dropdownMenu.classList.add('scale-95', 'opacity-0');
-        setTimeout(() => {
-            dropdownMenu.classList.add('hidden');
-        }, 200);
-    }
-
-    // Grid layout functions
-    function createGridLayout() {
-        const containerWidth = container.clientWidth;
-        const containerHeight = container.clientHeight;
-        const padding = 40;
-        const minSpacing = 20; // Minimum space between items
-
-        const availableWidth = containerWidth - (padding * 2);
-        const availableHeight = containerHeight - (padding * 2);
-
-        // Calculate optimal grid size based on number of messages
-        const totalMessages = messages.length;
-        const aspectRatio = availableWidth / availableHeight;
-        let cols = Math.ceil(Math.sqrt(totalMessages * aspectRatio));
-        let rows = Math.ceil(totalMessages / cols);
-
-        // Adjust if we have too few items for the calculated grid
-        if (cols * rows > totalMessages * 2) {
-            cols = Math.ceil(Math.sqrt(totalMessages));
-            rows = Math.ceil(totalMessages / cols);
-        }
-
-        const cellWidth = availableWidth / cols;
-        const cellHeight = availableHeight / rows;
-        const messageSize = Math.min(cellWidth, cellHeight) - minSpacing;
-
-        const positions = [];
-        for (let row = 0; row < rows; row++) {
-            for (let col = 0; col < cols; col++) {
-                positions.push({
-                    x: padding + (col * cellWidth) + (cellWidth - messageSize) / 2,
-                    y: padding + (row * cellHeight) + (cellHeight - messageSize) / 2,
-                    width: messageSize,
-                    height: messageSize
-                });
-            }
-        }
-
-        return positions;
-    }
-
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-
-    function positionMessages() {
-        // Reset all messages
-        messages.forEach(msg => {
-            msg.style.opacity = '0';
-            msg.style.transform = 'none';
+        const reloadInterval = 5 * 60 * 1000; // 5 minutes in milliseconds
+        setInterval(() => {
+            console.log('Reloading page...');
+            location.reload();
+        }, reloadInterval);
+    
+        // DOM Elements
+        const menuButton = document.getElementById('menuButton');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+        const downloadPNG = document.getElementById('downloadPNG');
+        const downloadPDF = document.getElementById('downloadPDF');
+        const board = document.getElementById('messageBoard');
+        const container = document.getElementById('messagesContainer');
+        const messages = Array.from(container.querySelectorAll('.message-item'));
+        const exportControls = document.getElementById('exportControls');
+    
+        // Menu functionality
+        menuButton.addEventListener('click', () => {
+            toggleDropdown();
         });
-
-        const positions = createGridLayout();
-        const shuffledPositions = shuffleArray([...positions]);
-        const usablePositions = shuffledPositions.slice(0, messages.length);
-
-        messages.forEach((msg, index) => {
-            if (index < usablePositions.length) {
-                const pos = usablePositions[index];
-                const randomRotation = Math.random() * 20 - 10; // Random rotation between -10 and 10 degrees
-                const randomScale = 0.9 + Math.random() * 0.2; // Random scale between 0.9 and 1.1
-
-                msg.style.width = `${pos.width}px`;
-                msg.style.maxWidth = `${pos.width}px`;
-                msg.style.transform = `translate(${pos.x}px, ${pos.y}px) rotate(${randomRotation}deg) scale(${randomScale})`;
-
-                // Staggered animation
+    
+        function toggleDropdown() {
+            dropdownMenu.classList.toggle('hidden');
+            dropdownMenu.classList.toggle('scale-95');
+            dropdownMenu.classList.toggle('opacity-0');
+    
+            if (!dropdownMenu.classList.contains('hidden')) {
                 setTimeout(() => {
-                    msg.style.opacity = '1';
-                }, index * 50);
+                    dropdownMenu.classList.remove('scale-95', 'opacity-0');
+                    dropdownMenu.classList.add('scale-100', 'opacity-100');
+                }, 0);
+            }
+        }
+    
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!menuButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                closeDropdown();
             }
         });
-    }
-
-    // Export preparation and cleanup
-    async function prepareForCapture() {
-        exportControls.style.display = 'none';
-        // Wait for any transitions to complete
-        return new Promise(resolve => setTimeout(resolve, 150));
-    }
-
-    async function restoreAfterCapture() {
-        exportControls.style.display = 'block';
-    }
-
-    // Button state management
-    function updateButtonState(button, isLoading) {
-        const originalContent = button.innerHTML;
-        if (isLoading) {
-            button.disabled = true;
-            const loadingContent = `
-                <div class="flex items-center space-x-3">
-                    <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100">
-                        <svg class="w-4 h-4 animate-spin text-gray-600" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                        </svg>
-                    </span>
-                    <div class="flex flex-col">
-                        <span class="text-gray-600 font-medium">Processing...</span>
-                    </div>
-                </div>
-            `;
-            button.innerHTML = loadingContent;
-        } else {
-            button.disabled = false;
-            button.innerHTML = originalContent;
+    
+        function closeDropdown() {
+            dropdownMenu.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                dropdownMenu.classList.add('hidden');
+            }, 200);
         }
-    }
-
-    // Image generation
-    async function generateImage() {
-        await prepareForCapture();
-        try {
-            const canvas = await html2canvas(board, {
-                scale: 2,
-                backgroundColor: '#FFFFFF',
-                logging: false,
-                allowTaint: true,
-                useCORS: true,
-                onclone: function(clonedDoc) {
-                    // Additional cleanup of cloned element if needed
-                    const clonedBoard = clonedDoc.getElementById('messageBoard');
-                    const controls = clonedBoard.querySelector('#exportControls');
-                    if (controls) controls.remove();
+    
+        // Grid layout functions
+        function createGridLayout() {
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+            const padding = 40;
+            const minSpacing = 20; // Minimum space between items
+    
+            const availableWidth = containerWidth - (padding * 2);
+            const availableHeight = containerHeight - (padding * 2);
+    
+            // Calculate optimal grid size based on number of messages
+            const totalMessages = messages.length;
+            const aspectRatio = availableWidth / availableHeight;
+            let cols = Math.ceil(Math.sqrt(totalMessages * aspectRatio));
+            let rows = Math.ceil(totalMessages / cols);
+    
+            // Adjust if we have too few items for the calculated grid
+            if (cols * rows > totalMessages * 2) {
+                cols = Math.ceil(Math.sqrt(totalMessages));
+                rows = Math.ceil(totalMessages / cols);
+            }
+    
+            const cellWidth = availableWidth / cols;
+            const cellHeight = availableHeight / rows;
+            const messageSize = Math.min(cellWidth, cellHeight) - minSpacing;
+    
+            const positions = [];
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    positions.push({
+                        x: padding + (col * cellWidth) + (cellWidth - messageSize) / 2,
+                        y: padding + (row * cellHeight) + (cellHeight - messageSize) / 2,
+                        width: messageSize,
+                        height: messageSize
+                    });
+                }
+            }
+    
+            return positions;
+        }
+    
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+    
+        function positionMessages() {
+            // Reset all messages
+            messages.forEach(msg => {
+                msg.style.opacity = '0';
+                msg.style.transform = 'none';
+            });
+    
+            const positions = createGridLayout();
+            const shuffledPositions = shuffleArray([...positions]);
+            const usablePositions = shuffledPositions.slice(0, messages.length);
+    
+            messages.forEach((msg, index) => {
+                if (index < usablePositions.length) {
+                    const pos = usablePositions[index];
+                    const randomRotation = Math.random() * 20 - 10; // Random rotation between -10 and 10 degrees
+                    const randomScale = 0.9 + Math.random() * 0.2; // Random scale between 0.9 and 1.1
+    
+                    msg.style.width = `${pos.width}px`;
+                    msg.style.maxWidth = `${pos.width}px`;
+                    msg.style.transform = `translate(${pos.x}px, ${pos.y}px) rotate(${randomRotation}deg) scale(${randomScale})`;
+    
+                    // Staggered animation
+                    setTimeout(() => {
+                        msg.style.opacity = '1';
+                    }, index * 50);
                 }
             });
-            return canvas;
-        } finally {
-            await restoreAfterCapture();
         }
-    }
-
-    // Download handlers
-    downloadPNG.addEventListener('click', async () => {
-        updateButtonState(downloadPNG, true);
-        try {
-            const canvas = await generateImage();
-            const link = document.createElement('a');
-            link.download = `guestbook-memories-${new Date().toISOString().split('T')[0]}.png`;
-            link.href = canvas.toDataURL('image/png', 1.0);
-            link.click();
-        } catch (error) {
-            console.error('Error generating PNG:', error);
-            alert('Failed to generate PNG. Please try again.');
-        } finally {
-            updateButtonState(downloadPNG, false);
-            closeDropdown();
+    
+        // Export preparation and cleanup
+        async function prepareForCapture() {
+            exportControls.style.display = 'none';
+            // Wait for any transitions to complete
+            return new Promise(resolve => setTimeout(resolve, 150));
         }
-    });
-
-    downloadPDF.addEventListener('click', async () => {
-        updateButtonState(downloadPDF, true);
-        try {
-            const canvas = await generateImage();
-            const imgData = canvas.toDataURL('image/png', 1.0);
-            const { jsPDF } = window.jspdf;
-
-            const pdf = new jsPDF({
-                orientation: 'landscape',
-                unit: 'px',
-                format: [canvas.width, canvas.height],
-                hotfixes: ['px_scaling']
-            });
-
-            pdf.addImage(imgData, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
-            pdf.save(`guestbook-memories-${new Date().toISOString().split('T')[0]}.pdf`);
-        } catch (error) {
-            console.error('Error generating PDF:', error);
-            alert('Failed to generate PDF. Please try again.');
-        } finally {
-            updateButtonState(downloadPDF, false);
-            closeDropdown();
+    
+        async function restoreAfterCapture() {
+            exportControls.style.display = 'block';
         }
-    });
-
-    // Initial load handling
-    let loadedImages = 0;
-    messages.forEach(msg => {
-        const img = msg.querySelector('img');
-        if (img.complete) {
-            loadedImages++;
-            if (loadedImages === messages.length) {
-                positionMessages();
+    
+        // Button state management
+        function updateButtonState(button, isLoading) {
+            const originalContent = button.innerHTML;
+            if (isLoading) {
+                button.disabled = true;
+                const loadingContent = `
+                    <div class="flex items-center space-x-3">
+                        <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100">
+                            <svg class="w-4 h-4 animate-spin text-gray-600" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                            </svg>
+                        </span>
+                        <div class="flex flex-col">
+                            <span class="text-gray-600 font-medium">Processing...</span>
+                        </div>
+                    </div>
+                `;
+                button.innerHTML = loadingContent;
+            } else {
+                button.disabled = false;
+                button.innerHTML = originalContent;
             }
-        } else {
-            img.onload = () => {
+        }
+    
+        // Image generation
+        async function generateImage() {
+            await prepareForCapture();
+            try {
+                const canvas = await html2canvas(board, {
+                    scale: 4, // Increase scale factor for higher resolution
+                    backgroundColor: '#FFFFFF',
+                    logging: false,
+                    allowTaint: true,
+                    useCORS: true,
+                    onclone: function(clonedDoc) {
+                        // Additional cleanup of cloned element if needed
+                        const clonedBoard = clonedDoc.getElementById('messageBoard');
+                        const controls = clonedBoard.querySelector('#exportControls');
+                        if (controls) controls.remove();
+                    }
+                });
+                return canvas;
+            } finally {
+                await restoreAfterCapture();
+            }
+        }
+    
+        // Download handlers
+        downloadPNG.addEventListener('click', async () => {
+            updateButtonState(downloadPNG, true);
+            try {
+                const canvas = await generateImage();
+                const link = document.createElement('a');
+                link.download = `guestbook-memories-${new Date().toISOString().split('T')[0]}.png`;
+                link.href = canvas.toDataURL('image/png', 1.0);
+                link.click();
+            } catch (error) {
+                console.error('Error generating PNG:', error);
+                alert('Failed to generate PNG. Please try again.');
+            } finally {
+                updateButtonState(downloadPNG, false);
+                closeDropdown();
+            }
+        });
+    
+        downloadPDF.addEventListener('click', async () => {
+            updateButtonState(downloadPDF, true);
+            try {
+                const canvas = await generateImage();
+                const imgData = canvas.toDataURL('image/png', 1.0);
+                const { jsPDF } = window.jspdf;
+    
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'px',
+                    format: [canvas.width, canvas.height],
+                    hotfixes: ['px_scaling']
+                });
+    
+                pdf.addImage(imgData, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
+                pdf.save(`guestbook-memories-${new Date().toISOString().split('T')[0]}.pdf`);
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Failed to generate PDF. Please try again.');
+            } finally {
+                updateButtonState(downloadPDF, false);
+                closeDropdown();
+            }
+        });
+    
+        // Initial load handling
+        let loadedImages = 0;
+        messages.forEach(msg => {
+            const img = msg.querySelector('img');
+            if (img.complete) {
                 loadedImages++;
                 if (loadedImages === messages.length) {
                     positionMessages();
                 }
-            };
-        }
+            } else {
+                img.onload = () => {
+                    loadedImages++;
+                    if (loadedImages === messages.length) {
+                        positionMessages();
+                    }
+                };
+            }
+        });
+    
+        // Resize handling with debounce
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                positionMessages();
+            }, 250);
+        });
     });
-
-    // Resize handling with debounce
-    let resizeTimeout;
-    window.addEventListener('resize', () => {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(() => {
-            positionMessages();
-        }, 250);
-    });
-});
-</script>
+    </script>
 {% endblock %}
