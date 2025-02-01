@@ -110,10 +110,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-<!-- Your existing HTML code remains the same -->
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Auto-reload the page every 5 minutes (300,000 milliseconds)
         const reloadInterval = 5 * 60 * 1000; // 5 minutes in milliseconds
         setInterval(() => {
             console.log('Reloading page...');
@@ -281,7 +281,7 @@
             await prepareForCapture();
             try {
                 const canvas = await html2canvas(board, {
-                    scale: 4, // Increase scale factor for higher resolution
+                    scale: 6, // Increased scale for higher resolution
                     backgroundColor: '#FFFFFF',
                     logging: false,
                     allowTaint: true,
@@ -306,7 +306,7 @@
                 const canvas = await generateImage();
                 const link = document.createElement('a');
                 link.download = `guestbook-memories-${new Date().toISOString().split('T')[0]}.png`;
-                link.href = canvas.toDataURL('image/png', 1.0);
+                link.href = canvas.toDataURL('image/png', 1.0); // Highest quality PNG
                 link.click();
             } catch (error) {
                 console.error('Error generating PNG:', error);
@@ -321,14 +321,15 @@
             updateButtonState(downloadPDF, true);
             try {
                 const canvas = await generateImage();
-                const imgData = canvas.toDataURL('image/png', 1.0);
+                const imgData = canvas.toDataURL('image/png', 1.0); // Highest quality PNG
                 const { jsPDF } = window.jspdf;
     
                 const pdf = new jsPDF({
                     orientation: 'landscape',
                     unit: 'px',
                     format: [canvas.width, canvas.height],
-                    hotfixes: ['px_scaling']
+                    hotfixes: ['px_scaling'],
+                    compress: false // Disable compression for maximum quality
                 });
     
                 pdf.addImage(imgData, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
