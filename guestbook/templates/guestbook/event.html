@@ -12,9 +12,12 @@
                            bg-clip-text text-transparent pb-2">
                     Event Guestbooks
                 </h1>
-                <div class="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 rounded-full"></div>
+                <div
+                    class="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 rounded-full">
+                </div>
             </div>
-            <p class="text-lg text-gray-600 dark:text-gray-400">Share your memories and messages with our digital guestbooks</p>
+            <p class="text-lg text-gray-600 dark:text-gray-400">Share your memories and messages with our digital
+                guestbooks</p>
         </div>
 
         {% if events %}
@@ -27,8 +30,7 @@
                          data-[state=active]:bg-blue-600 data-[state=active]:text-white
                          data-[state=active]:border-blue-700
                          bg-gray-100 text-gray-700 hover:bg-gray-200
-                         dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-                    data-state="active">
+                         dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700" data-state="active">
                 All Events
             </button>
             <button class="filter-btn px-6 py-2.5 rounded-full text-sm font-semibold 
@@ -67,36 +69,38 @@
         <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {% for event in events %}
             {% with event_date=event.date|date:"Y-m-d" %}
-            <a href="{% url 'guestbook:message' event.id %}" 
-               class="group relative bg-white dark:bg-gray-800 rounded-2xl 
+            <div class="group relative bg-white dark:bg-gray-800 rounded-2xl 
                       shadow-md hover:shadow-2xl
                       transition-all duration-500 
                       transform hover:-translate-y-2
                       border border-gray-200 dark:border-gray-700
                       overflow-hidden">
-                
+
                 <!-- Decorative Elements -->
-                <div class="absolute inset-0 bg-gradient-to-br from-white/80 to-transparent dark:from-white/5 dark:to-transparent"></div>
-                <div class="absolute top-0 left-0 w-24 h-1.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-br-xl"></div>
-                
+                <div
+                    class="absolute inset-0 bg-gradient-to-br from-white/80 to-transparent dark:from-white/5 dark:to-transparent">
+                </div>
+                <div
+                    class="absolute top-0 left-0 w-24 h-1.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-br-xl">
+                </div>
+
                 <!-- Event Status with improved visibility -->
                 <div class="absolute top-4 right-4 z-10">
-                    {% if event_date < current_date %}
-                    <span class="px-4 py-2 bg-gray-900/90 text-white text-sm font-medium rounded-full
+                    {% if event_date < current_date %} <span class="px-4 py-2 bg-gray-900/90 text-white text-sm font-medium rounded-full
                                shadow-lg backdrop-blur-sm">
                         Past Event
-                    </span>
-                    {% elif event_date == current_date %}
-                    <span class="px-4 py-2 bg-green-500/90 text-white text-sm font-medium rounded-full
+                        </span>
+                        {% elif event_date == current_date %}
+                        <span class="px-4 py-2 bg-green-500/90 text-white text-sm font-medium rounded-full
                                shadow-lg backdrop-blur-sm animate-pulse">
-                        Happening Today
-                    </span>
-                    {% else %}
-                    <span class="px-4 py-2 bg-blue-500/90 text-white text-sm font-medium rounded-full
+                            Happening Today
+                        </span>
+                        {% else %}
+                        <span class="px-4 py-2 bg-blue-500/90 text-white text-sm font-medium rounded-full
                                shadow-lg backdrop-blur-sm">
-                        Upcoming
-                    </span>
-                    {% endif %}
+                            Upcoming
+                        </span>
+                        {% endif %}
                 </div>
 
                 <div class="relative p-8 space-y-6">
@@ -112,74 +116,76 @@
                             {{ event.date|date:"F d, Y" }}
                         </time>
                     </div>
-                    
+
                     <!-- Location with improved visibility -->
-                    <div class="flex items-center text-gray-700 dark:text-gray-300 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-300">
-                        <svg class="w-5 h-5 mr-2 transition-transform duration-500 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <div
+                        class="flex items-center text-gray-700 dark:text-gray-300 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-300">
+                        <svg class="w-5 h-5 mr-2 transition-transform duration-500 group-hover:scale-110" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                         {{ event.location }}
                     </div>
 
                     <!-- Metadata with improved separation -->
-                    <div class="pt-6 mt-6 border-t border-gray-200 dark:border-gray-700
-                              text-sm text-gray-600 dark:text-gray-400
-                              flex justify-between items-center">
-                        <span class="flex items-center gap-2">
+                    <div class="pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 
+            text-sm text-gray-600 dark:text-gray-400
+            flex justify-between items-center">
+                        <a href="{% url 'guestbook:message' event.id %}" class="flex items-center gap-2 hover:text-blue-500 transition-colors duration-200 ease-in-out
+              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" aria-label="Write a message">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                             </svg>
-                            {{ event.created_at|date:"M d, Y" }}
-                        </span>
-                        {% if event.updated_at != event.created_at %}
-                        <span class="flex items-center gap-2">
+                            <span class="hover:underline">Write Message</span>
+                        </a>
+                        <a href="{% url 'guestbook:dynamic' event.id %}" class="flex items-center gap-2 hover:text-blue-500 transition-colors duration-200 ease-in-out
+              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" aria-label="View messages">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
-                            {{ event.updated_at|date:"M d, Y" }}
-                        </span>
-                        {% endif %}
+                            <span class="hover:underline">View Messages</span>
+                        </a>
                     </div>
                 </div>
-            </a>
+            </div>
             {% endwith %}
             {% endfor %}
         </div>
-                <!-- Pagination -->
-                {% if events.paginator.num_pages > 1 %}
-                <div class="flex justify-center mt-12">
-                    <nav class="flex items-center gap-2" aria-label="Pagination">
-                        <!-- Previous Page -->
-                        {% if events.has_previous %}
-                        <a href="?page={{ events.previous_page_number }}" 
-                           class="relative inline-flex items-center px-4 py-2 text-sm font-semibold 
+        <!-- Pagination -->
+        {% if events.paginator.num_pages > 1 %}
+        <div class="flex justify-center mt-12">
+            <nav class="flex items-center gap-2" aria-label="Pagination">
+                <!-- Previous Page -->
+                {% if events.has_previous %}
+                <a href="?page={{ events.previous_page_number }}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold 
                                   bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 
                                   rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700
                                   text-gray-700 dark:text-gray-200
                                   transition-colors duration-300">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                            </svg>
-                            Previous
-                        </a>
-                        {% endif %}
-        
-                        <!-- Page Numbers -->
-                        <div class="inline-flex gap-2">
-                            {% for page_num in page_range %}
-                                {% if page_num == events.paginator.ELLIPSIS %}
-                                    <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold 
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Previous
+                </a>
+                {% endif %}
+
+                <!-- Page Numbers -->
+                <div class="inline-flex gap-2">
+                    {% for page_num in page_range %}
+                    {% if page_num == events.paginator.ELLIPSIS %}
+                    <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold 
                                              text-gray-700 dark:text-gray-300">
-                                        ...
-                                    </span>
-                                {% else %}
-                                    <a href="?page={{ page_num }}"
-                                       class="relative inline-flex items-center px-4 py-2 text-sm font-semibold 
+                        ...
+                    </span>
+                    {% else %}
+                    <a href="?page={{ page_num }}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold 
                                               {% if page_num == events.number %}
                                               bg-blue-600 text-white
                                               {% else %}
@@ -188,42 +194,43 @@
                                               {% endif %}
                                               border border-gray-300 dark:border-gray-600
                                               rounded-lg transition-colors duration-300">
-                                        {{ page_num }}
-                                    </a>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-        
-                        <!-- Next Page -->
-                        {% if events.has_next %}
-                        <a href="?page={{ events.next_page_number }}"
-                           class="relative inline-flex items-center px-4 py-2 text-sm font-semibold 
+                        {{ page_num }}
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- Next Page -->
+                {% if events.has_next %}
+                <a href="?page={{ events.next_page_number }}" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold 
                                   bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 
                                   rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700
                                   text-gray-700 dark:text-gray-200
                                   transition-colors duration-300">
-                            Next
-                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                            </svg>
-                        </a>
-                        {% endif %}
-                    </nav>
-                </div>
+                    Next
+                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </a>
                 {% endif %}
+            </nav>
+        </div>
+        {% endif %}
         {% else %}
         <!-- Empty State with improved visibility -->
         <div class="text-center py-20 bg-white dark:bg-gray-800 rounded-2xl shadow-lg
                     border border-gray-200 dark:border-gray-700">
             <div class="relative">
-                <svg class="w-24 h-24 mx-auto text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                <svg class="w-24 h-24 mx-auto text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
             </div>
             <h3 class="mt-6 text-xl font-semibold text-gray-900 dark:text-white">No Events Yet</h3>
             <p class="mt-2 text-gray-600 dark:text-gray-400">Check back soon for upcoming events and guestbooks.</p>
-            <p class="mt-4 text-sm text-gray-500 dark:text-gray-500">We're working on planning some amazing events!</p>
+            <p class="mt-4 text-sm text-gray-500 dark:text-gray-500">We're working on planning some amazing events!
+            </p>
         </div>
         {% endif %}
     </div>
@@ -232,38 +239,38 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    const eventCards = document.querySelectorAll('.grid > a');
+    document.addEventListener('DOMContentLoaded', function () {
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const eventCards = document.querySelectorAll('.grid > a');
 
-    filterButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            // Update active state
-            filterButtons.forEach(btn => {
-                btn.dataset.state = '';
-            });
-            button.dataset.state = 'active';
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Update active state
+                filterButtons.forEach(btn => {
+                    btn.dataset.state = '';
+                });
+                button.dataset.state = 'active';
 
-            // Filter events with smooth transitions
-            const filter = button.textContent.trim().toLowerCase();
-            eventCards.forEach(card => {
-                const status = card.querySelector('span').textContent.trim().toLowerCase();
-                card.style.transition = 'all 0.3s ease-in-out';
-                
-                if (filter === 'all events' || status.includes(filter)) {
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                    card.style.display = 'block';
-                } else {
-                    card.style.opacity = '0';
-                    card.style.transform = 'translateY(20px)';
-                    setTimeout(() => {
-                        card.style.display = 'none';
-                    }, 300);
-                }
+                // Filter events with smooth transitions
+                const filter = button.textContent.trim().toLowerCase();
+                eventCards.forEach(card => {
+                    const status = card.querySelector('span').textContent.trim().toLowerCase();
+                    card.style.transition = 'all 0.3s ease-in-out';
+
+                    if (filter === 'all events' || status.includes(filter)) {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                        card.style.display = 'block';
+                    } else {
+                        card.style.opacity = '0';
+                        card.style.transform = 'translateY(20px)';
+                        setTimeout(() => {
+                            card.style.display = 'none';
+                        }, 300);
+                    }
+                });
             });
         });
     });
-});
 </script>
 {% endblock %}

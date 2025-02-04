@@ -1,0 +1,67 @@
+{% extends 'guestbook/base.html' %}
+{% load static %}
+
+{% block styles %}
+<link href="{% static 'css/dynamic.css' %}" rel="stylesheet">
+<style>
+    .scroll-content {
+        display: flex;
+        gap: 1.5rem;
+        padding: 1rem;
+    }
+    .image-wrapper { perspective: 1000px; }
+    .image-container {
+        transform-style: preserve-3d;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .image-container:hover {
+        transform: scale(1.1) translateZ(20px);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    .scroll-container {
+        margin-bottom: 2rem;
+        mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    }
+    .speed-normal { animation-duration: 30s; }
+    .speed-fast { animation-duration: 20s; }
+    .speed-slow { animation-duration: 40s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="w-full mx-auto py-4">
+    {% regroup messages|dictsort:"created_at" by forloop.counter0|divisibleby:3 as message_rows %}
+    {% for row in message_rows %}
+    <div class="scroll-container {% cycle 'scroll-rtl speed-normal' 'scroll-ltr speed-fast' 'scroll-rtl speed-slow' %}">
+        <div class="scroll-content">
+            {% for message in row.list|slice:":3" %}
+            <div class="image-wrapper">
+                <div class="image-container relative w-96 h-72 overflow-hidden rounded-2xl">
+                    <img 
+                        src="{{ message.signature_base64 }}"
+                        alt="Guest message {{ forloop.parentloop.counter }}-{{ forloop.counter }}"
+                        class="w-full h-full object-cover brightness-105 contrast-105"
+                        loading="lazy"
+                        decoding="async"
+                    >
+                </div>
+            </div>
+            {% endfor %}
+            {% for message in row.list|slice:":3" %}
+            <div class="image-wrapper">
+                <div class="image-container relative w-96 h-72 overflow-hidden rounded-2xl">
+                    <img 
+                        src="{{ message.signature_base64 }}"
+                        alt="Guest message {{ forloop.parentloop.counter }}-{{ forloop.counter }}"
+                        class="w-full h-full object-cover brightness-105 contrast-105"
+                        loading="lazy"
+                        decoding="async"
+                    >
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

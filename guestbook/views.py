@@ -188,3 +188,13 @@ class MessagesView(View):
             'messages': messages,
         }
         return render(request, self.template_name, context)
+    
+
+@login_required(login_url='guestbook:login')  
+def dynamic(request, event_id):
+    event = get_object_or_404(Event, pk=event_id)
+    messages = event.entries.all().order_by('-created_at')
+    context = {
+        'messages': messages,
+    }
+    return render(request, 'guestbook/dynamic.html', context)

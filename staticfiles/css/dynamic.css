@@ -1,0 +1,73 @@
+
+@keyframes smoothScrollRTL {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-33.333%); }
+}
+
+@keyframes smoothScrollLTR {
+    0% { transform: translateX(-33.333%); }
+    100% { transform: translateX(0); }
+}
+
+.scroll-container {
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    margin-bottom: 1rem;  /* Increased vertical spacing between rows */
+}
+
+.scroll-content {
+    display: flex;
+    will-change: transform;
+    width: fit-content;
+    flex-shrink: 0;
+}
+
+.scroll-rtl .scroll-content {
+    animation: smoothScrollRTL linear infinite;
+}
+
+.scroll-ltr .scroll-content {
+    animation: smoothScrollLTR linear infinite;
+}
+
+.speed-normal .scroll-content {
+    animation-duration: 30s;
+}
+
+.speed-fast .scroll-content {
+    animation-duration: 20s;
+}
+
+.speed-slow .scroll-content {
+    animation-duration: 40s;
+}
+
+.card-group {
+    display: flex;
+    gap: 1px;  /* Minimal spacing between cards */
+}
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    backdrop-filter: blur(5px);
+    flex-shrink: 0;
+    margin-right: 1px;  /* Minimal spacing between cards */
+}
+
+.card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 25px 30px -5px rgba(255, 255, 255, 0.2);
+    z-index: 10;  /* Ensure hovering card appears above others */
+}
+
+body {
+    overflow-x: hidden;
+    background-color: rgb(255, 255, 255);
+}
+
+/* Remove margin from last card in each group to prevent double spacing */
+.card-group .card:last-child {
+    margin-right: .5rem;
+}
