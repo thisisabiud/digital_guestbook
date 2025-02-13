@@ -47,7 +47,12 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',    
+    'daphne',
+    'django.contrib.staticfiles',   
+    #third party apps
+    'channels',
+    
+
     #local apps
     'guestbook',
 ]
@@ -82,6 +87,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'digital_guestbook.wsgi.application'
 
+# Channel layer configuration
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
+
+# Set the ASGI application
+ASGI_APPLICATION = 'digital_guestbook.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases

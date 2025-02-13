@@ -1,5 +1,6 @@
 import re
-from django.conf import settings
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from django.http import JsonResponse
@@ -9,6 +10,7 @@ from django.views import View
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.core.exceptions import ValidationError
+from django.views.generic import TemplateView
 from django.utils import timezone
 import base64
 from django.contrib.auth.decorators import login_required
@@ -129,6 +131,27 @@ class GuestbookView(View):
         }
         return render(request, self.template_name, context)
     
+    def _notify_new_message(self, entry, event_id):
+        """Notify connected WebSocket clients of new message"""
+        channel_layer = get_channel_layer()
+
+        #Prepare message data
+        message_data ={
+            'id': entry.id,
+            'signature_base64': entry.signature_base64,
+            'created_at': entry.created_at.strftime('%b %d, %Y %I:%M %p'),
+            'event_id': event_id
+        }
+
+        #Send to appropriate group based on event_id
+        group_name = f'guestbook_{event_id}' if event_id else 'guestbook_all'
+        async_to_sync(channel_layer.group_send)(
+            group_name,
+            {
+                'type': 'message_update',
+                'message': message_data
+            }
+        )
     def post(self, request, *args, **kwargs):
         event_id = kwargs.get('event_id')
         event = get_object_or_404(Event, pk=event_id) if event_id else None
@@ -161,6 +184,8 @@ class GuestbookView(View):
                         raise ValidationError(f'Invalid image data: {str(e)}')
                 
                 entry.save()
+                # Notify WebSocket clients
+                self._notify_new_message(entry, event_id)
                 
                 return JsonResponse({
                     'status': 'success',
@@ -175,6 +200,11 @@ class GuestbookView(View):
                 'status': 'error',
                 'error': str(e)
             }, status=400)
+        
+
+
+
+
 @method_decorator(login_required(login_url='guestbook:login'), name='dispatch')   
 class MessagesView(View):
     template_name = 'guestbook/messages.html'
@@ -198,3 +228,28 @@ def dynamic(request, event_id):
         'messages': messages,
     }
     return render(request, 'guestbook/dynamic.html', context)
+
+@method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
+class MessageDisplayView(TemplateView):
+    template_name = 'guestbook/messages_template.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get event_id from URL if it exists
+        event_id = self.kwargs.get('event_id')
+        event = get_object_or_404(Event, pk=event_id) if event_id else None
+        
+        # Query messages
+        messages = GuestbookEntry.objects.filter(event=event) if event else GuestbookEntry.objects.all()
+        messages = messages.order_by('-created_at')
+        
+        # Add to context
+        context.update({
+            'messages': messages,
+            'event': event,
+            'ws_protocol': 'wss' if self.request.is_secure() else 'ws',
+            'host': self.request.get_host(),
+        })
+        
+        return context
