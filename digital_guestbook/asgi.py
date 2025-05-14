@@ -1,16 +1,9 @@
 # digital_guestbook/asgi.py
 import os
 import django
-from dotenv import load_dotenv
 
-load_dotenv()
 
-environment = os.getenv('ENVIRONMENT', 'development')
-
-if environment == 'production':
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'digital_guestbook.settings.prod')
-else:
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'digital_guestbook.settings.dev')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'digital_guestbook.settings')
 
 django.setup() 
 
