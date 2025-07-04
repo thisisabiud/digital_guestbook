@@ -179,6 +179,8 @@
 
 {% block content %}
 <div class="w-full mx-auto p-0">
+
+    <img src="{{ event.overlay_image.url }}" alt="Event Overlay" class="absolute inset-0 w-full h-full object-cover z-0" loading="lazy" decoding="async">
     <!-- Row 1: RTL - Normal Speed -->
     <div class="scroll-container scroll-rtl speed-normal">
         <div class="scroll-content">
@@ -287,3 +289,55 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 {% endblock %}
 {% endblock %}
+
+    .live-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        border-radius: 50px;
+        color: #059669;
+        font-size: 0.85rem;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+    }
+
+    .live-dot {
+        width: 8px;
+        height: 8px;
+        background: #10b981;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+
+        .event-logo {
+        position: absolute;
+        top: 2rem;
+        left: 2rem;
+        width: 120px;
+        height: 80px;
+        object-fit: contain;
+        z-index: 100;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 0.5rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+
+      <img src="{{ event.overlay_image.url }}" alt="Event Logo" class="event-logo" loading="lazy" decoding="async">
+    
+    <!-- Header Section -->
+    <div class="header-section">
+        <div class="live-indicator">
+            <div class="live-dot"></div>
+            <span>LIVE</span>
+        </div>
+        <div class="message-counter">
+            <span id="currentIndex">1</span> / <span id="totalCount">{{ messages|length }}</span>
+        </div>
+    </div>

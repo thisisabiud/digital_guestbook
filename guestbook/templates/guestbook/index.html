@@ -1,472 +1,660 @@
-{% extends 'guestbook/base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Guestbook</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* Professional color scheme */
+        :root {
+            --primary-color: #1e40af;
+            --secondary-color: #3b82f6;
+            --accent-color: #60a5fa;
+            --background-color: #f8fafc;
+            --card-background: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
 
-{% block content %}
-    <!-- Main Content - Fully responsive with improved layout -->
-    <div class="min-h-[calc(100vh-4rem)] p-4 sm:p-6 lg:p-8 bg-gray-50">
-        <div class="h-full max-w-4xl mx-auto bg-white rounded-xl shadow-lg flex flex-col overflow-hidden">
-            <div class="p-4 sm:p-6 flex flex-col h-full">
-                <h2 class="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-4 flex-none">
-                    Leave Your Message
+        /* Clean signature card background */
+        .signature-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid var(--border-color);
+        }
+        
+        /* Professional glass effect */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px var(--shadow-color);
+        }
+        
+        /* Selection states */
+        .pen-size-btn.selected {
+            background: var(--primary-color) !important;
+            color: white !important;
+            box-shadow: 0 0 0 2px var(--accent-color);
+        }
+        
+        /* Canvas styling */
+        #signatureCanvas {
+            cursor: crosshair;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        /* Professional button styling */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px var(--shadow-color);
+        }
+
+        /* Refined typography */
+        .title-gradient {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Enhanced focus states */
+        .focus-ring:focus {
+            outline: 2px solid var(--accent-color);
+            outline-offset: 2px;
+        }
+
+        /* Subtle animations */
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <div class="max-w-4xl mx-auto p-6">
+        <!-- Header -->
+        <div class="text-center mb-8 animate-fade-in">
+            <h1 class="text-4xl font-bold title-gradient mb-3">
+                Digital Guestbook
+            </h1>
+            <p class="text-lg text-gray-600">Leave your signature and make it memorable</p>
+        </div>
+        
+        <!-- Main Card -->
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden animate-fade-in">
+            <div class="p-8">
+                <h2 class="text-2xl font-semibold text-center text-gray-800 mb-8">
+                    Create Your Signature
                 </h2>
                 
-                <form id="guestbookForm" method="POST" class="flex flex-col flex-grow h-full">
-                    {% csrf_token %}
+                <form id="guestbookForm" method="POST" class="space-y-8">
+                    <!-- CSRF Token -->
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                     
-                    <!-- Hidden input for signature data -->
+                    <!-- Hidden inputs for form data -->
                     <input type="hidden" name="signature_base64" id="signatureInput">
+                    <input type="hidden" name="background_color" id="backgroundColorInput" value="professional">
                     
-                    <!-- Toolbar with enhanced design and new features -->
-                    <div class="bg-gray-50 rounded-lg p-3 mb-4 flex flex-wrap items-center gap-3 sm:gap-4 flex-none border border-gray-200">
-                        <!-- Pen Size Controls -->
-                        <div class="flex items-center gap-2">
-                            <label class="text-sm font-medium text-gray-700 hidden sm:inline">Pen:</label>
-                            <div class="flex gap-1">
-                                <button type="button" onclick="setPenSize(1)" class="w-8 h-8 rounded-full border border-gray-300 hover:bg-gray-100 flex items-center justify-center transition-all" id="size1">
-                                    <div class="w-1 h-1 bg-black rounded-full"></div>
+                    <!-- If event_id exists, add it as hidden input -->
+                    {% if event %}
+                    <input type="hidden" name="event" value="{{ event.id }}">
+                    {% endif %}
+                    
+                    <!-- Toolbar -->
+                    <div class="glass-effect rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <!-- Pen Size Controls -->
+                            <div class="flex items-center gap-4">
+                                <span class="text-sm font-medium text-gray-700 flex items-center gap-2">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                                        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                                        <path d="M2 2l7.586 7.586"/>
+                                        <circle cx="11" cy="11" r="2"/>
+                                    </svg>
+                                    Pen Size
+                                </span>
+                                <div class="flex gap-2">
+                                    <button type="button" onclick="setPenSize(2)" 
+                                            class="pen-size-btn focus-ring w-12 h-12 rounded-lg border-2 border-gray-200 flex items-center justify-center transition-all duration-200 hover:border-blue-300" 
+                                            id="size-2" title="Fine">
+                                        <div class="w-1 h-1 bg-gray-600 rounded-full"></div>
+                                    </button>
+                                    <button type="button" onclick="setPenSize(4)" 
+                                            class="pen-size-btn selected focus-ring w-12 h-12 rounded-lg border-2 border-gray-200 flex items-center justify-center transition-all duration-200 hover:border-blue-300" 
+                                            id="size-4" title="Normal">
+                                        <div class="w-2 h-2 bg-gray-600 rounded-full"></div>
+                                    </button>
+                                    <button type="button" onclick="setPenSize(6)" 
+                                            class="pen-size-btn focus-ring w-12 h-12 rounded-lg border-2 border-gray-200 flex items-center justify-center transition-all duration-200 hover:border-blue-300" 
+                                            id="size-6" title="Medium">
+                                        <div class="w-3 h-3 bg-gray-600 rounded-full"></div>
+                                    </button>
+                                    <button type="button" onclick="setPenSize(10)" 
+                                            class="pen-size-btn focus-ring w-12 h-12 rounded-lg border-2 border-gray-200 flex items-center justify-center transition-all duration-200 hover:border-blue-300" 
+                                            id="size-10" title="Bold">
+                                        <div class="w-4 h-4 bg-gray-600 rounded-full"></div>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="flex items-center gap-3">
+                                <button type="button" id="undoButton" onclick="undoDrawing()" 
+                                        class="focus-ring p-3 bg-gray-100 rounded-lg text-gray-600 hover:bg-gray-200 transition-all duration-200" 
+                                        title="Undo">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 14 4 9l5-5"/>
+                                        <path d="M4 9h16"/>
+                                    </svg>
                                 </button>
-                                <button type="button" onclick="setPenSize(3)" class="w-8 h-8 rounded-full border border-gray-300 hover:bg-gray-100 flex items-center justify-center transition-all" id="size2">
-                                    <div class="w-2 h-2 bg-black rounded-full"></div>
+                                <button type="button" id="redoButton" onclick="redoDrawing()" 
+                                        class="focus-ring p-3 bg-gray-100 rounded-lg text-gray-600 hover:bg-gray-200 transition-all duration-200" 
+                                        title="Redo">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="m15 14 5-5-5-5"/>
+                                        <path d="M4 9h16"/>
+                                    </svg>
                                 </button>
-                                <button type="button" onclick="setPenSize(5)" class="w-8 h-8 rounded-full border border-gray-300 hover:bg-gray-100 flex items-center justify-center transition-all" id="size3">
-                                    <div class="w-3 h-3 bg-black rounded-full"></div>
-                                </button>
-                                <button type="button" onclick="setPenSize(8)" class="w-8 h-8 rounded-full border border-gray-300 hover:bg-gray-100 flex items-center justify-center transition-all" id="size4">
-                                    <div class="w-4 h-4 bg-black rounded-full"></div>
+                                <button type="button" onclick="clearCanvas()"
+                                        class="focus-ring p-3 bg-red-50 rounded-lg text-red-600 hover:bg-red-100 transition-all duration-200" 
+                                        title="Clear Canvas">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M20 5H9l-7 7 7 7h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z"/>
+                                        <line x1="18" y1="9" x2="12" y2="15"/>
+                                        <line x1="12" y1="9" x2="18" y2="15"/>
+                                    </svg>
                                 </button>
                             </div>
                         </div>
-                        
-                        <!-- Divider -->
-                        <div class="h-8 w-px bg-gray-300 hidden sm:block"></div>
-                        
-                        <!-- History Controls -->
-                        <div class="flex items-center gap-1">
-                            <button 
-                                type="button" 
-                                id="undoButton" 
-                                onclick="undoDrawing()" 
-                                disabled
-                                class="px-2 sm:px-3 py-1 sm:py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 flex items-center gap-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M9 14 4 9l5-5"/>
-                                    <path d="M4 9h16"/>
-                                </svg>
-                                <span class="hidden sm:inline">Undo</span>
-                            </button>
-                            <button 
-                                type="button" 
-                                id="redoButton" 
-                                onclick="redoDrawing()" 
-                                disabled
-                                class="px-2 sm:px-3 py-1 sm:py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 flex items-center gap-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="m15 14 5-5-5-5"/>
-                                    <path d="M4 9h16"/>
-                                </svg>
-                                <span class="hidden sm:inline">Redo</span>
-                            </button>
-                        </div>
-                        
-                        <!-- Clear Button - Pushed to right edge -->
-                        <button 
-                            type="button"
-                            onclick="clearCanvas()"
-                            class="ml-auto px-2 sm:px-3 py-1 sm:py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 flex items-center gap-1 transition-colors"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20 5H9l-7 7 7 7h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z"/>
-                                <line x1="18" y1="9" x2="12" y2="15"/>
-                                <line x1="12" y1="9" x2="18" y2="15"/>
-                            </svg>
-                            <span class="hidden sm:inline">Clear</span>
-                        </button>
                     </div>
                     
-                    <!-- Canvas Container with fixed height -->
-                    <div class="relative rounded-lg bg-white mb-4 border border-gray-200 shadow-inner" style="height: 400px;">
-                        <div class="absolute inset-0 bg-gray-50 rounded-lg overflow-hidden">
-                            <!-- Graph paper background -->
-                            <div class="absolute inset-0 bg-graph-paper opacity-10"></div>
-                            <canvas 
-                                id="signatureCanvas"
-                                class="absolute inset-0 w-full h-full touch-none cursor-crosshair"
-                            ></canvas>
+                    <!-- Canvas Container -->
+                    <div class="relative">
+                        <div id="canvasContainer" class="relative rounded-xl shadow-lg overflow-hidden border border-gray-200" style="height: 400px;">
+                            <div class="absolute inset-0 signature-card transition-all duration-300" id="canvasBackground">
+                                <!-- Subtle grid pattern -->
+                                <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(circle at 2px 2px, rgba(0,0,0,0.15) 1px, transparent 0); background-size: 20px 20px;"></div>
+                                <canvas id="signatureCanvas" class="absolute inset-0 w-full h-full"></canvas>
+                            </div>
+                        </div>
+                        <div class="mt-4 text-center">
+                            <p class="text-sm text-gray-500">Sign above with your mouse or finger</p>
                         </div>
                     </div>
 
-                    <!-- Submit Button with improved design -->
-                    <div class="flex justify-end flex-none">
-                        <button 
-                            type="submit"
-                            class="px-5 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors shadow-sm"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="22" y1="2" x2="11" y2="13"/>
-                                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    <!-- Submit Button -->
+                    <div class="flex justify-center pt-2">
+                        <button type="submit" id="submitBtn"
+                                class="btn-primary focus-ring px-8 py-4 text-white rounded-xl font-semibold text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/>
                             </svg>
-                            Submit
+                            Save Signature
                         </button>
                     </div>
                 </form>
             </div>
         </div>
+        
+        <!-- Footer -->
+        <div class="text-center mt-8 text-gray-500">
+            <p class="text-sm">Thank you for signing our guestbook</p>
+        </div>
     </div>
-{% endblock %}
+
+    <script>
+        $(document).ready(function() {
+            // Canvas setup
+            const canvas = $('#signatureCanvas')[0];
+            const ctx = canvas.getContext('2d');
+            const canvasBackground = $('#canvasBackground');
+            
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+            let currentPenSize = 4;
+            let canvasScale = 1;
+            let currentPath = [];
+            let isSubmitting = false; // Flag to prevent multiple submissions
+
+            // Drawing history for undo/redo
+            let drawingHistory = [];
+            let historyIndex = -1;
+            const maxHistoryLength = 50;
+
+            // Initialize canvas with professional styling
+            function initializeCanvas() {
+                const parent = canvas.parentElement;
+                const rect = parent.getBoundingClientRect();
+                
+                const devicePixelRatio = window.devicePixelRatio || 1;
+                canvas.width = rect.width * devicePixelRatio;
+                canvas.height = rect.height * devicePixelRatio;
+                canvas.style.width = rect.width + 'px';
+                canvas.style.height = rect.height + 'px';
+                
+                canvasScale = devicePixelRatio;
+                ctx.scale(devicePixelRatio, devicePixelRatio);
+                
+                // Professional drawing properties
+                ctx.strokeStyle = '#1e293b'; // Professional dark gray
+                ctx.lineJoin = 'round';
+                ctx.lineCap = 'round';
+                ctx.lineWidth = currentPenSize;
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                
+                ctx.clearRect(0, 0, canvas.width / canvasScale, canvas.height / canvasScale);
+            }
+
+            // Set pen size
+            window.setPenSize = function(size) {
+                currentPenSize = size;
+                ctx.lineWidth = size;
+                $('.pen-size-btn').removeClass('selected');
+                $(`#size-${size}`).addClass('selected');
+            };
+
+            // Drawing functions
+            function getCanvasCoordinates(e) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                return {
+                    x: clientX - rect.left,
+                    y: clientY - rect.top
+                };
+            }
+
+            function startDrawing(e) {
+                e.preventDefault();
+                isDrawing = true;
+                const coords = getCanvasCoordinates(e);
+                lastX = coords.x;
+                lastY = coords.y;
+                
+                currentPath = [{x: lastX, y: lastY}];
+                
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(lastX + 0.1, lastY + 0.1);
+                ctx.stroke();
+            }
+            
+            function draw(e) {
+                if (!isDrawing) return;
+                e.preventDefault();
+                
+                const coords = getCanvasCoordinates(e);
+                currentPath.push({x: coords.x, y: coords.y});
+                
+                requestAnimationFrame(() => {
+                    ctx.lineTo(coords.x, coords.y);
+                    ctx.stroke();
+                });
+                
+                lastX = coords.x;
+                lastY = coords.y;
+            }
+
+            function stopDrawing(e) {
+                if (isDrawing) {
+                    e && e.preventDefault();
+                    isDrawing = false;
+                    ctx.closePath();
+                    saveCanvasState();
+                    currentPath = [];
+                }
+            }
+
+            // History management
+            function saveCanvasState() {
+                if (historyIndex < drawingHistory.length - 1) {
+                    drawingHistory = drawingHistory.slice(0, historyIndex + 1);
+                }
+                
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                drawingHistory.push(imageData);
+                
+                if (drawingHistory.length > maxHistoryLength) {
+                    drawingHistory.shift();
+                } else {
+                    historyIndex++;
+                }
+                
+                updateUndoRedoButtons();
+            }
+            
+            window.undoDrawing = function() {
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    ctx.putImageData(drawingHistory[historyIndex], 0, 0);
+                    updateUndoRedoButtons();
+                }
+            };
+            
+            window.redoDrawing = function() {
+                if (historyIndex < drawingHistory.length - 1) {
+                    historyIndex++;
+                    ctx.putImageData(drawingHistory[historyIndex], 0, 0);
+                    updateUndoRedoButtons();
+                }
+            };
+            
+            function updateUndoRedoButtons() {
+                $('#undoButton').prop('disabled', historyIndex <= 0).css('opacity', historyIndex <= 0 ? '0.5' : '1');
+                $('#redoButton').prop('disabled', historyIndex >= drawingHistory.length - 1).css('opacity', historyIndex >= drawingHistory.length - 1 ? '0.5' : '1');
+            }
 
 
-{% block scripts %}
-<!-- Include SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script>
-    const canvas = document.getElementById('signatureCanvas');
-    const ctx = canvas.getContext('2d');
-    let isDrawing = false;
-    let lastX = 0;
-    let lastY = 0;
-    let currentPenSize = 3;
+            // Event listeners
+            canvas.addEventListener('mousedown', startDrawing, {passive: false});
+            canvas.addEventListener('mousemove', draw, {passive: false});
+            canvas.addEventListener('mouseup', stopDrawing, {passive: false});
+            canvas.addEventListener('mouseout', stopDrawing, {passive: false});
 
-    // Set initial canvas size
-    const parent = canvas.parentElement;
-    canvas.width = parent.clientWidth;
-    canvas.height = parent.clientHeight;
+            canvas.addEventListener('touchstart', startDrawing, {passive: false});
+            canvas.addEventListener('touchmove', draw, {passive: false});
+            canvas.addEventListener('touchend', stopDrawing, {passive: false});
+            canvas.addEventListener('touchcancel', stopDrawing, {passive: false});
+
+// Replace the existing form submission code with this improved version
+
+$('#guestbookForm').on('submit', function(e) {
+    e.preventDefault();
     
-    // History management for undo/redo functionality
-    let drawingHistory = [];
-    let historyIndex = -1;
-    const maxHistoryLength = 50; // Limit history to prevent memory issues
+    // Prevent multiple submissions
+    if (isSubmitting) {
+        return;
+    }
     
-    const undoButton = document.getElementById('undoButton');
-    const redoButton = document.getElementById('redoButton');
+    isSubmitting = true;
+    const $submitBtn = $('#submitBtn');
+    $submitBtn.prop('disabled', true);
+    
+    // Professional loading dialog
+    Swal.fire({
+        title: 'Processing Your Signature',
+        html: `
+            <div class="flex flex-col items-center space-y-4">
+                <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                <p class="text-gray-600 text-sm">Please wait while we save your signature...</p>
+            </div>
+        `,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        customClass: {
+            popup: 'rounded-xl shadow-2xl',
+            title: 'text-xl font-semibold text-gray-800 mb-4'
+        },
+        background: '#ffffff',
+        backdrop: 'rgba(0, 0, 0, 0.4)'
+    });
 
-    function resizeCanvas() {
-        // Store the current canvas content
+    try {
+        // Create final composite image
         const tempCanvas = document.createElement('canvas');
         const tempCtx = tempCanvas.getContext('2d');
         tempCanvas.width = canvas.width;
         tempCanvas.height = canvas.height;
-        tempCtx.drawImage(canvas, 0, 0);
         
-        // Resize the main canvas
-        const parent = canvas.parentElement;
-        canvas.width = parent.clientWidth;
-        canvas.height = parent.clientHeight;
+        tempCtx.scale(canvasScale, canvasScale);
         
-        // Reset canvas styles
-        ctx.strokeStyle = '#000';
-        ctx.lineJoin = 'round';
-        ctx.lineCap = 'round';
-        ctx.lineWidth = currentPenSize;
+        // Draw clean white background
+        tempCtx.fillStyle = '#ffffff';
+        tempCtx.fillRect(0, 0, canvas.width / canvasScale, canvas.height / canvasScale);
         
-        // Restore the content
-        ctx.drawImage(tempCanvas, 0, 0, tempCanvas.width, tempCanvas.height, 0, 0, canvas.width, canvas.height);
-    }
+        // Draw the signature on top
+        tempCtx.drawImage(canvas, 0, 0, canvas.width / canvasScale, canvas.height / canvasScale);
+        
+        const dataURL = tempCanvas.toDataURL('image/png', 1.0);
+        $('#signatureInput').val(dataURL);
+        $('#backgroundColorInput').val('professional');
 
-    // Save the current canvas state to history
-    function saveCanvasState() {
-        // If we're not at the end of the history array, truncate the array
-        if (historyIndex < drawingHistory.length - 1) {
-            drawingHistory = drawingHistory.slice(0, historyIndex + 1);
-        }
-        
-        // Save current state to history
-        drawingHistory.push(canvas.toDataURL());
-        
-        // Limit history size to prevent memory issues
-        if (drawingHistory.length > maxHistoryLength) {
-            drawingHistory.shift();
-        } else {
-            historyIndex++;
-        }
-        
-        // Update button states
-        updateUndoRedoButtons();
-    }
-    
-    // Load a state from history
-    function loadCanvasState(state) {
-        const img = new Image();
-        img.onload = function() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        };
-        img.src = state;
-    }
-    
-    // Undo the last drawing action
-    function undoDrawing() {
-        if (historyIndex > 0) {
-            historyIndex--;
-            loadCanvasState(drawingHistory[historyIndex]);
-            updateUndoRedoButtons();
-        }
-    }
-    
-    // Redo the previously undone drawing action
-    function redoDrawing() {
-        if (historyIndex < drawingHistory.length - 1) {
-            historyIndex++;
-            loadCanvasState(drawingHistory[historyIndex]);
-            updateUndoRedoButtons();
-        }
-    }
-    
-    // Update the enabled/disabled state of undo/redo buttons
-    function updateUndoRedoButtons() {
-        undoButton.disabled = historyIndex <= 0;
-        redoButton.disabled = historyIndex >= drawingHistory.length - 1;
-    }
+        // Get submit URL
+        const pathParts = window.location.pathname.split('/');
+        const submitUrl = pathParts.length > 1 && pathParts[1] && !isNaN(pathParts[1]) 
+            ? `/${pathParts[1]}/message/` 
+            : '/message/';
 
-    // Debounce function to limit resize events
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-
-    function setPenSize(size) {
-        currentPenSize = size;
-        ctx.lineWidth = size;
-        
-        // Update visual feedback for selected size
-        const sizes = [1, 3, 5, 8];
-        sizes.forEach((s, i) => {
-            const button = document.getElementById(`size${i + 1}`);
-            if (s === size) {
-                button.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
-            } else {
-                button.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50');
-            }
-        });
-    }
-
-    // Add responsive canvas height adjustment
-    function adjustCanvasHeight() {
-        const container = document.getElementById('canvasContainer');
-        const viewportHeight = window.innerHeight;
-        const containerWidth = container.clientWidth;
-        
-        // Make canvas height responsive based on viewport and aspect ratio
-        // For mobile devices, use a 1:1 ratio, for larger screens use a 16:9 ratio
-        let canvasHeight;
-        if (window.innerWidth < 640) { // Mobile
-            canvasHeight = Math.min(350, containerWidth * 1.0); // Square aspect ratio with max height
-        } else {
-            canvasHeight = Math.min(500, containerWidth * 0.6); // 16:9-ish aspect ratio with max height
-        }
-        
-        // Ensure minimum height
-        canvasHeight = Math.max(250, canvasHeight);
-        
-        container.style.height = `${canvasHeight}px`;
-        
-        // Resize canvas after changing container height
-        resizeCanvas();
-    }
-    
-    // Initialize canvas
-    setTimeout(() => {
-        adjustCanvasHeight();
-        resizeCanvas();
-    }, 100); // Short delay to ensure DOM is ready
-    
-    // Use debounced version of functions for the resize event
-    const debouncedResize = debounce(() => {
-        adjustCanvasHeight();
-    }, 250);
-    
-    window.addEventListener('resize', debouncedResize);
-    setPenSize(3); // Set default pen size
-    
-    // Initialize canvas history
-    saveCanvasState(); // Save initial blank state
-
-    // Drawing functions
-    function getCanvasCoordinates(e) {
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        
-        return {
-            x: (clientX - rect.left) * scaleX,
-            y: (clientY - rect.top) * scaleY
-        };
-    }
-
-    function startDrawing(e) {
-        isDrawing = true;
-        const coords = getCanvasCoordinates(e);
-        lastX = coords.x;
-        lastY = coords.y;
-    }
-    
-    function draw(e) {
-        if (!isDrawing) return;
-        e.preventDefault(); // Prevent scrolling while drawing
-        
-        const coords = getCanvasCoordinates(e);
-        
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(coords.x, coords.y);
-        ctx.stroke();
-        
-        [lastX, lastY] = [coords.x, coords.y];
-    }
-
-    function stopDrawing() {
-        if (isDrawing) {
-            isDrawing = false;
-            saveCanvasState(); // Save state when stroke is completed
-        }
-    }
-
-    // Event listeners for mouse
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('mouseout', stopDrawing);
-
-    // Event listeners for touch
-    canvas.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        startDrawing(e);
-    });
-    canvas.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        draw(e);
-    });
-    canvas.addEventListener('touchend', stopDrawing);
-
-    // Clear function with confirmation
-    function clearCanvas() {
-        Swal.fire({
-            title: 'Clear Canvas?',
-            text: 'This will remove your entire drawing.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3B82F6',
-            cancelButtonColor: '#6B7280',
-            confirmButtonText: 'Yes, clear it!'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                saveCanvasState(); // Save the blank state to history
-            }
-        });
-    }
-
-    // Form submission
-    document.getElementById('guestbookForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        // Get the canvas data
-        const dataURL = canvas.toDataURL();
-        document.getElementById('signatureInput').value = dataURL;
-
-        // Show loading indicator
-        Swal.fire({
-            title: 'Submitting...',
-            didOpen: () => {
-                Swal.showLoading();
+        // Submit with AJAX
+        $.ajax({
+            url: submitUrl,
+            type: 'POST',
+            data: $(this).serialize(),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val()
             },
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            showConfirmButton: false
-        });
-
-        try {
-            const response = await fetch(window.location.href, {
-                method: 'POST',
-                body: new FormData(this),
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
+            timeout: 30000, // 30 second timeout
+            success: function(data) {
+                // Professional success dialog
                 Swal.fire({
                     icon: 'success',
-                    title: 'Success!',
-                    text: 'Your message has been saved successfully.',
-                    confirmButtonColor: '#3B82F6'
-                }).then(() => {
-                    clearCanvas();
-                    if (data.redirect_url) {
-                        window.location.href = data.redirect_url;
+                    title: 'Signature Saved Successfully!',
+                    html: `
+                        <div class="text-center">
+                            <div class="mb-4">
+                                <div class="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </div>
+                                <p class="text-gray-600">${data.message || 'Your signature has been added to the guestbook.'}</p>
+                            </div>
+                        </div>
+                    `,
+                    confirmButtonText: 'Perfect!',
+                    confirmButtonColor: '#1e40af',
+                    customClass: {
+                        popup: 'rounded-xl shadow-2xl',
+                        title: 'text-xl font-semibold text-gray-800 mb-2',
+                        confirmButton: 'px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg'
+                    },
+                    background: '#ffffff',
+                    backdrop: 'rgba(0, 0, 0, 0.4)',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Clear canvas after confirmation
+                        ctx.clearRect(0, 0, canvas.width / canvasScale, canvas.height / canvasScale);
+                        drawingHistory = [];
+                        historyIndex = -1;
+                        saveCanvasState();
+
+                        if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        }
                     }
                 });
-            } else {
-                throw new Error(data.error || 'Something went wrong');
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', xhr.responseText);
+                let errorMessage = 'Something went wrong while saving your signature.';
+                
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    errorMessage = response.message || response.errors?.join(', ') || errorMessage;
+                } catch (e) {
+                    if (xhr.status === 0) {
+                        errorMessage = 'Network error - please check your connection and try again.';
+                    } else if (status === 'timeout') {
+                        errorMessage = 'Request timed out - please try again.';
+                    } else {
+                        errorMessage = `Error ${xhr.status}: ${error}`;
+                    }
+                }
+                
+                // Professional error dialog
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Unable to Save Signature',
+                    html: `
+                        <div class="text-center">
+                            <div class="mb-4">
+                                <div class="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <p class="text-gray-600">${errorMessage}</p>
+                            </div>
+                        </div>
+                    `,
+                    confirmButtonText: 'Try Again',
+                    confirmButtonColor: '#ef4444',
+                    customClass: {
+                        popup: 'rounded-xl shadow-2xl',
+                        title: 'text-xl font-semibold text-gray-800 mb-2',
+                        confirmButton: 'px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg'
+                    },
+                    background: '#ffffff',
+                    backdrop: 'rgba(0, 0, 0, 0.4)',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                });
+            },
+            complete: function() {
+                // Re-enable the form
+                isSubmitting = false;
+                $submitBtn.prop('disabled', false);
             }
-        } catch (error) {
+        });
+
+    } catch (error) {
+        console.error('Error:', error);
+        
+        Swal.fire({
+            icon: 'error',
+            title: 'Processing Error',
+            html: `
+                <div class="text-center">
+                    <div class="mb-4">
+                        <div class="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-gray-600">${error.message || 'Failed to process your signature. Please try again.'}</p>
+                    </div>
+                </div>
+            `,
+            confirmButtonText: 'Try Again',
+            confirmButtonColor: '#ef4444',
+            customClass: {
+                popup: 'rounded-xl shadow-2xl',
+                title: 'text-xl font-semibold text-gray-800 mb-2',
+                confirmButton: 'px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg'
+            },
+            background: '#ffffff',
+            backdrop: 'rgba(0, 0, 0, 0.4)',
+            allowOutsideClick: false,
+            allowEscapeKey: false
+        });
+        
+        // Re-enable the form
+        isSubmitting = false;
+        $submitBtn.prop('disabled', false);
+    }
+});
+
+// Also update the clear canvas function for consistency
+window.clearCanvas = function() {
+    Swal.fire({
+        title: 'Clear Canvas?',
+        html: `
+            <div class="text-center">
+                <div class="mb-4">
+                    <div class="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L12.732 4.5c-.77-.833-2.186-.833-2.956 0L2.858 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-gray-600">This will remove your entire signature and cannot be undone.</p>
+                </div>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, clear it',
+        cancelButtonText: 'Cancel',
+        customClass: {
+            popup: 'rounded-xl shadow-2xl',
+            title: 'text-xl font-semibold text-gray-800 mb-2',
+            confirmButton: 'px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg mr-2',
+            cancelButton: 'px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg'
+        },
+        background: '#ffffff',
+        backdrop: 'rgba(0, 0, 0, 0.4)'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            ctx.clearRect(0, 0, canvas.width / canvasScale, canvas.height / canvasScale);
+            saveCanvasState();
+            
             Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: error.message || 'Something went wrong!',
-                confirmButtonColor: '#3B82F6'
+                title: 'Canvas Cleared',
+                html: `
+                    <div class="text-center">
+                        <div class="mb-4">
+                            <div class="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <p class="text-gray-600">You can now create a new signature.</p>
+                        </div>
+                    </div>
+                `,
+                timer: 2000,
+                showConfirmButton: false,
+                customClass: {
+                    popup: 'rounded-xl shadow-2xl',
+                    title: 'text-xl font-semibold text-gray-800 mb-2'
+                },
+                background: '#ffffff',
+                backdrop: 'rgba(0, 0, 0, 0.4)'
             });
         }
     });
-    
-    // Add graph paper style
-    document.head.insertAdjacentHTML('beforeend', `
-        <style>
-            .bg-graph-paper {
-                background-image: linear-gradient(#ddd 1px, transparent 1px),
-                                 linear-gradient(90deg, #ddd 1px, transparent 1px);
-                background-size: 20px 20px;
-            }
-            
-            /* Mobile optimizations */
-            @media (max-width: 640px) {
-                .bg-graph-paper {
-                    background-size: 15px 15px;
-                }
-            }
-            
-            /* Animation effects */
-            @keyframes fadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
-            }
-            
-            #signatureCanvas {
-                animation: fadeIn 0.3s ease-in-out;
-            }
-            
-            button {
-                transition: all 0.2s ease;
-            }
-            
-            button:active:not(:disabled) {
-                transform: translateY(1px);
-            }
-            
-            /* Ensure the canvas container takes up proper space */
-            #canvasContainer {
-                min-height: 300px;
-                transition: height 0.3s ease;
-            }
-            
-            /* Prevent page jumping when elements change */
-            #guestbookForm {
-                min-height: 500px;
-            }
-        </style>
-    `);
-</script>
-{% endblock %}
+};
+
+            // Resize handling
+            $(window).on('resize', function() {
+                const currentDrawing = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                initializeCanvas();
+                ctx.putImageData(currentDrawing, 0, 0);
+            });
+
+            // Initialize everything
+            initializeCanvas();
+            setPenSize(4);
+            saveCanvasState();
+        });
+    </script>
+</body>
+</html>
