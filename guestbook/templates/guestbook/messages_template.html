@@ -1,132 +1,337 @@
 {% extends "guestbook/base.html" %}
-
 {% block styles %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 <style>
-    .swiper-container {
+    .slideshow-container {
         position: relative;
         width: 100%;
-        height: 70vh;
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        height: 100vh;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        overflow: hidden;
     }
-
+    
     .swiper {
         width: 100%;
         height: 100%;
-        padding: 2rem 4rem;
+        padding: 3rem 5rem;
     }
-
+    
     .swiper-slide {
-        width: 45vw;
-        height: 55vh;
+        width: 400px;
+        height: 500px;
         border-radius: 20px;
-        background-color: #ffffff;
-        border: 1px solid rgba(240, 240, 240, 0.8);
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
-        opacity: 0.5;
-        transform: scale(0.9);
-        transition: all 0.5s ease;
+        background: linear-gradient(145deg, #ffffff, #e9ecef);
+        border: 2px solid #dee2e6;
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.15),
+            0 0 0 1px rgba(255, 255, 255, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        opacity: 0.6;
+        transform: scale(0.85) rotateY(45deg);
+        transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         overflow: hidden;
+        position: relative;
     }
-
+    
+    .swiper-slide::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57);
+        background-size: 500% 100%;
+        animation: rainbow 3s ease-in-out infinite;
+    }
+    
+    @keyframes rainbow {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+    }
+    
     .swiper-slide-active {
         opacity: 1;
-        transform: scale(1);
+        transform: scale(1) rotateY(0deg);
+        z-index: 10;
     }
-
-    .card {
+    
+    .swiper-slide-next,
+    .swiper-slide-prev {
+        opacity: 0.8;
+        transform: scale(0.92) rotateY(25deg);
+    }
+    
+    .sticky-note-card {
         height: 100%;
         display: flex;
         flex-direction: column;
+        position: relative;
+        background: linear-gradient(145deg, #fff9c4, #fff3a0);
+        border-radius: 16px;
+        overflow: hidden;
     }
-
-    .message-image {
+    
+    .sticky-note-card::after {
+        content: '';
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 30px;
+        height: 30px;
+        background: radial-gradient(circle, #ff6b6b 40%, transparent 40%);
+        border-radius: 50%;
+        opacity: 0.7;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.7; }
+        50% { transform: scale(1.1); opacity: 0.9; }
+    }
+    
+    .name-tag {
+        background: #2c3e50;
+        color: #fff;
+        padding: 12px 20px;
+        font-weight: 700;
+        font-size: 16px;
+        text-align: center;
+        position: relative;
+        box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+    }
+    
+    .name-tag::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-top: 10px solid #667eea;
+    }
+    
+    .message-content {
         flex: 1;
-        width: 100%;
-        object-fit: contain;
-        background-color: #ffffff;
-        padding: 1rem;
-    }
-
-    .card-content {
-        height: 60px;
-        padding: 1rem;
-        background: #ffffff;
-        border-top: 1px solid #f1f5f9;
+        padding: 30px 25px 20px;
         display: flex;
-        align-items: center;
+        flex-direction: column;
         justify-content: center;
+        align-items: center;
+        position: relative;
+        background: linear-gradient(145deg, #ffffff, #f8f9fa);
+        margin: 10px;
+        border-radius: 12px;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
     }
-
-    .date-time {
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: #64748b;
+    
+    .message-image {
+        max-width: 100%;
+        max-height: 280px;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        transition: transform 0.3s ease;
     }
-
+    
+    .swiper-slide-active .message-image {
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-5px); }
+    }
+    
+    .date-footer {
+        padding: 15px 20px;
+        background: #f5f7fa;
+        color: #2c3e50;
+        border-top: 2px solid #dee2e6;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 600;
+        position: relative;
+    }
+    
+    .date-footer::before {
+        content: '📅';
+        margin-right: 8px;
+    }
+    
     .message-counter {
         position: absolute;
-        top: 1rem;
-        right: 2rem;
-        z-index: 10;
-        padding: 0.5rem 1rem;
-        background: #ffffff;
-        border-radius: 12px;
-        color: #64748b;
-        font-size: 0.85rem;
-        font-weight: 500;
-        border: 1px solid #f1f5f9;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        top: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 249, 250, 0.95));
+        backdrop-filter: blur(10px);
+        padding: 12px 24px;
+        border-radius: 25px;
+        color: #495057;
+        font-size: 16px;
+        font-weight: 700;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        min-width: 120px;
+        text-align: center;
     }
-
-        .event-logo {
+    
+    .event-logo {
         position: absolute;
         top: 2rem;
-        left: 2rem;
-        width: 120px;
-        height: 80px;
+        right: 2rem;
+        width: 100px;
+        height: 70px;
         object-fit: contain;
         z-index: 100;
-        border-radius: 12px;
+        border-radius: 16px;
         background: rgba(255, 255, 255, 0.95);
-        padding: 0.5rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 10px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        transition: transform 0.3s ease;
+    }
+    
+    .event-logo:hover {
+        transform: scale(1.05);
+    }
+    
+    .progress-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #2c3e50, #2980b9);
+        border-radius: 2px;
+        transition: width 3s linear;
+        z-index: 100;
+    }
+    
+    .floating-particles {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 1;
+    }
+    
+    .particle {
+        position: absolute;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        animation: float-particle 15s infinite linear;
+    }
+    
+    @keyframes float-particle {
+        0% {
+            transform: translateY(100vh) rotate(0deg);
+            opacity: 0;
+        }
+        10% {
+            opacity: 1;
+        }
+        90% {
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(-100px) rotate(360deg);
+            opacity: 0;
+        }
+    }
+    
+    .slide-indicator {
+        position: absolute;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        space-x: 8px;
+        z-index: 100;
+    }
+    
+    .slide-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #b0bec5;
+        margin: 0 4px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .slide-dot.active {
+        background: #2c3e50;
+        transform: scale(1.2);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="relative w-full min-h-screen flex items-center justify-center">
-      <img src="{{ event.overlay_image.url }}" alt="Event Logo" class="event-logo" loading="lazy" decoding="async">
+<div class="slideshow-container">
+    <!-- Floating Particles Background -->
+    <div class="floating-particles">
+        <!-- Particles will be generated by JavaScript -->
+    </div>
     
-    <div class="swiper-container">
-        <div class="message-counter">
-            <span id="currentIndex">1</span>/<span id="totalCount">{{ messages|length }}</span>
-        </div>
-        <div class="swiper">
-            <div class="swiper-wrapper">
-                {% for message in messages %}
-                <div class="swiper-slide" data-index="{{ forloop.counter }}">
-                    <div class="card">
-                        <img 
-                            src="{{ message.signature_base64 }}" 
-                            alt="Guest message {{ forloop.counter }}"
-                            class="message-image" 
-                            loading="lazy" 
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <!-- Event Logo -->
+    {% if event.overlay_image %}
+    <img src="{{ event.overlay_image.url }}" alt="Event Logo" class="event-logo" loading="lazy" decoding="async">
+    {% endif %}
+    
+    <!-- Message Counter -->
+    <div class="message-counter">
+        <span id="currentIndex">1</span> / <span id="totalCount">{{ messages|length }}</span>
+    </div>
+    
+    <!-- Main Swiper Container -->
+    <div class="swiper">
+        <div class="swiper-wrapper">
+            {% for message in messages %}
+            <div class="swiper-slide" data-index="{{ forloop.counter }}">
+                <div class="sticky-note-card">
+                    <!-- Name Tag -->
+                    <div class="name-tag">
+                        <span>{{ message.name|default:'Anonymous Guest' }}</span>
+                    </div>
+                    
+                    <!-- Message Content -->
+                    <div class="message-content">
+                        <img
+                            src="{{ message.signature_base64 }}"
+                            alt="Message from {{ message.name|default:'Guest' }}"
+                            class="message-image"
+                            loading="lazy"
                             decoding="async"
                         >
-                        <div class="card-content">
-                            <div class="date-time">
-                                {{ message.created_at|date:"F d, Y • H:i" }}
-                            </div>
-                        </div>
+                        
+                        <!-- Decorative elements -->
+                        <div class="absolute top-4 left-4 w-2 h-2 bg-yellow-400 rounded-full opacity-60"></div>
+                        <div class="absolute top-4 right-4 w-3 h-3 bg-pink-400 rounded-full opacity-40"></div>
+                        <div class="absolute bottom-4 left-4 w-2 h-2 bg-blue-400 rounded-full opacity-50"></div>
+                    </div>
+                    
+                    <!-- Date Footer -->
+                    <div class="date-footer">
+                        {{ message.created_at|date:"F d, Y • H:i" }}
                     </div>
                 </div>
-                {% endfor %}
             </div>
+            {% endfor %}
         </div>
+    </div>
+    
+    <!-- Slide Indicators -->
+    <div class="slide-indicator" id="slideIndicators">
+        <!-- Dots will be generated by JavaScript -->
     </div>
 </div>
 {% endblock %}
@@ -135,60 +340,126 @@
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // State management
         const state = {
             actualSlideCount: document.querySelectorAll('.swiper-slide').length,
+            currentSlide: 0,
+            isPlaying: true,
             elements: {
                 currentIndex: document.getElementById('currentIndex'),
-                totalCount: document.getElementById('totalCount')
+                totalCount: document.getElementById('totalCount'),
+                progressBar: document.getElementById('progressBar'),
+                slideIndicators: document.getElementById('slideIndicators')
             }
         };
-
+        
+        // Create floating particles
+        function createParticles() {
+            const particleContainer = document.querySelector('.floating-particles');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.width = Math.random() * 6 + 2 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                particleContainer.appendChild(particle);
+            }
+        }
+        
+        // Create slide indicators
+        function createSlideIndicators() {
+            for (let i = 0; i < state.actualSlideCount; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'slide-dot';
+                if (i === 0) dot.classList.add('active');
+                dot.addEventListener('click', () => swiper.slideTo(i));
+                state.elements.slideIndicators.appendChild(dot);
+            }
+        }
+        
+        // Update progress bar
+        function updateProgressBar() {
+            if (state.elements.progressBar) {
+                const progress = ((state.currentSlide + 1) / state.actualSlideCount) * 100;
+                state.elements.progressBar.style.width = progress + '%';
+            }
+        }
+        
+        // Update slide indicators
+        function updateSlideIndicators() {
+            const dots = state.elements.slideIndicators.querySelectorAll('.slide-dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === state.currentSlide);
+            });
+        }
+        
+        // Update counter and UI elements
+        function updateCounter(swiper) {
+            const activeSlide = swiper.slides[swiper.activeIndex];
+            const currentIndex = activeSlide.getAttribute('data-index');
+            state.currentSlide = parseInt(currentIndex) - 1;
+            
+            state.elements.currentIndex.textContent = currentIndex;
+            state.elements.totalCount.textContent = state.actualSlideCount;
+            
+            updateProgressBar();
+            updateSlideIndicators();
+        }
+        
+        // Enhanced Swiper configuration
         const swiper = new Swiper('.swiper', {
             effect: 'coverflow',
             centeredSlides: true,
-            slidesPerView: 3,
-            spaceBetween: 30,
+            slidesPerView: 'auto',
+            spaceBetween: 50,
             initialSlide: 0,
             loop: true,
-            loopedSlides: 3,
-            allowTouchMove: false,
-            preventInteractionOnTransition: true,
+            grabCursor: true,
+            keyboard: {
+                enabled: true,
+            },
+            mousewheel: {
+                thresholdDelta: 50,
+            },
             coverflowEffect: {
-                rotate: 0,
+                rotate: 25,
                 stretch: 0,
-                depth: 100,
-                modifier: 2.5,
-                slideShadows: false,
+                depth: 150,
+                modifier: 1.5,
+                slideShadows: true,
             },
             autoplay: {
-                delay: 3000,
+                delay: 4000,
                 disableOnInteraction: false,
-                pauseOnMouseEnter: false,
-                waitForTransition: false
+                pauseOnMouseEnter: true,
+                waitForTransition: true
             },
+            speed: 800,
             on: {
                 slideChange: function () {
                     updateCounter(this);
                 },
                 init: function () {
                     updateCounter(this);
+                },
+                autoplayStart: function() {
+                    state.isPlaying = true;
+                },
+                autoplayStop: function() {
+                    state.isPlaying = false;
                 }
             }
         });
-
-        function updateCounter(swiper) {
-            const activeSlide = swiper.slides[swiper.activeIndex];
-            const currentIndex = activeSlide.getAttribute('data-index');
-            state.elements.currentIndex.textContent = currentIndex;
-            state.elements.totalCount.textContent = state.actualSlideCount;
-        }
-
+        
+        // Enhanced WebSocket functionality
         function setupWebSocket() {
             const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUrl = `${wsProtocol}//${window.location.host}/ws/messages/{{event_id}}/`;
+            const wsUrl = `${wsProtocol}//${window.location.host}/ws/messages/{{ event_id }}/`;
             
             const socket = new WebSocket(wsUrl);
-
+            
             socket.onmessage = function (e) {
                 try {
                     const data = JSON.parse(e.data);
@@ -199,45 +470,164 @@
                     console.error("WebSocket message error:", error);
                 }
             };
-
+            
             socket.onclose = function () {
                 setTimeout(() => setupWebSocket(), 2000);
             };
+            
+            socket.onerror = function(error) {
+                console.error("WebSocket error:", error);
+            };
         }
-
+        
+        // Enhanced add new message functionality
         function addNewMessage(message) {
             state.actualSlideCount++;
             
+            // Create new slide element
             const newSlide = document.createElement('div');
             newSlide.className = 'swiper-slide';
             newSlide.setAttribute('data-index', state.actualSlideCount);
             
             newSlide.innerHTML = `
-                <div class="card">
-                    <img 
-                        src="${message.signature_base64}" 
-                        class="message-image" 
-                        loading="lazy" 
-                        decoding="async"
-                        alt="Guest message ${state.actualSlideCount}"
-                    >
-                    <div class="card-content">
-                        <div class="date-time">
-                            ${new Date(message.created_at).toLocaleString()}
+                <div class="sticky-note-card">
+                    <div class="name-tag">
+                        <span>${message.name || 'Anonymous Guest'}</span>
+                    </div>
+                    <div class="message-content">
+                        <img
+                            src="${message.signature_base64}"
+                            alt="Message from ${message.name || 'Guest'}"
+                            class="message-image"
+                            loading="lazy"
+                            decoding="async"
+                        >
+                        <div class="absolute top-4 left-4 w-2 h-2 bg-yellow-400 rounded-full opacity-60"></div>
+                        <div class="absolute top-4 right-4 w-3 h-3 bg-pink-400 rounded-full opacity-40"></div>
+                        <div class="absolute bottom-4 left-4 w-2 h-2 bg-blue-400 rounded-full opacity-50"></div>
+                    </div>
+                    <div class="date-footer">
+                        ${new Date(message.created_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}
+                    </div>
+                </div>
+            `;
+            
+            // Add slide to swiper
+            swiper.appendSlide(newSlide);
+            
+            // Add new indicator dot
+            const newDot = document.createElement('div');
+            newDot.className = 'slide-dot';
+            newDot.addEventListener('click', () => swiper.slideTo(state.actualSlideCount - 1));
+            state.elements.slideIndicators.appendChild(newDot);
+            
+            // Update swiper and UI
+            swiper.update();
+            state.elements.totalCount.textContent = state.actualSlideCount;
+            
+            // Show notification for new message
+            showNewMessageNotification(message.name || 'Anonymous Guest');
+        }
+        
+        // New message notification
+        function showNewMessageNotification(name) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-6 right-6 z-50 bg-green-500 text-white p-4 rounded-xl shadow-2xl transform translate-x-full transition-all duration-500';
+            notification.innerHTML = `
+                <div class="flex items-center space-x-3">
+                    <div class="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+                    <span class="font-semibold">New message from ${name}!</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 500);
+            }, 3000);
+        }
+        
+        // Keyboard controls
+        document.addEventListener('keydown', function(e) {
+            switch(e.code) {
+                case 'ArrowLeft':
+                    swiper.slidePrev();
+                    break;
+                case 'ArrowRight':
+                    swiper.slideNext();
+                    break;
+                case 'Space':
+                    e.preventDefault();
+                    if (state.isPlaying) {
+                        swiper.autoplay.stop();
+                    } else {
+                        swiper.autoplay.start();
+                    }
+                    break;
+                case 'Home':
+                    swiper.slideTo(0);
+                    break;
+                case 'End':
+                    swiper.slideTo(state.actualSlideCount - 1);
+                    break;
+            }
+        });
+        
+        // Touch/Mouse controls for better interaction
+        let startY = 0;
+        document.addEventListener('touchstart', function(e) {
+            startY = e.touches[0].clientY;
+        });
+        
+        document.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+        }, { passive: false });
+        
+        // Initialize components
+        createParticles();
+        createSlideIndicators();
+        setupWebSocket();
+        
+        // Error handling for missing elements
+        if (state.actualSlideCount === 0) {
+            document.querySelector('.slideshow-container').innerHTML = `
+                <div class="flex items-center justify-center h-full">
+                    <div class="text-white text-center">
+                        <h2 class="text-3xl font-bold mb-4">No Messages Yet</h2>
+                        <p class="text-xl opacity-80">Waiting for guest messages...</p>
+                        <div class="mt-8">
+                            <div class="inline-block w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
                         </div>
                     </div>
                 </div>
             `;
-
-            // Just append the slide without forcing navigation
-            swiper.appendSlide(newSlide);
-            
-            // Update the swiper and counter
-            swiper.update();
-            state.elements.totalCount.textContent = state.actualSlideCount;
         }
-
-        setupWebSocket();
+        
+        // Performance optimization - pause animations when tab is not visible
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                swiper.autoplay.stop();
+            } else {
+                if (state.isPlaying) {
+                    swiper.autoplay.start();
+                }
+            }
+        });
     });
 </script>
 {% endblock %}

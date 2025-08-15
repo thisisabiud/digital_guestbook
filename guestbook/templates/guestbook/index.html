@@ -21,28 +21,24 @@
             --shadow-color: rgba(0, 0, 0, 0.1);
         }
 
-        /* Clean signature card background */
         .signature-card {
             background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
             border: 1px solid var(--border-color);
         }
         
-        /* Professional glass effect */
         .glass-effect {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border: 1px solid var(--border-color);
-            box-shadow: 0 4px 6px -1px var(--shadow-color);
+            box-shadow: 0 2px 4px -1px var(--shadow-color);
         }
         
-        /* Selection states */
         .pen-size-btn.selected {
             background: var(--primary-color) !important;
             color: white !important;
             box-shadow: 0 0 0 2px var(--accent-color);
         }
         
-        /* Canvas styling */
         #signatureCanvas {
             cursor: crosshair;
             touch-action: none;
@@ -52,18 +48,27 @@
             -ms-user-select: none;
         }
 
-        /* Professional button styling */
         .btn-primary {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             transition: all 0.3s ease;
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -5px var(--shadow-color);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px -2px var(--shadow-color);
         }
 
-        /* Refined typography */
+        .btn-secondary {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px -2px var(--shadow-color);
+        }
+
         .title-gradient {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             -webkit-background-clip: text;
@@ -71,41 +76,134 @@
             background-clip: text;
         }
 
-        /* Enhanced focus states */
         .focus-ring:focus {
             outline: 2px solid var(--accent-color);
             outline-offset: 2px;
         }
 
-        /* Subtle animations */
         .animate-fade-in {
-            animation: fadeIn 0.5s ease-in-out;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.5s ease-in-out;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .step-indicator {
+            transition: all 0.3s ease;
+        }
+
+        .step-indicator.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .step-indicator.completed {
+            background: #10b981;
+            color: white;
+        }
+
+        /* Form validation styles */
+        .input-error {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+        }
+
+        .input-valid {
+            border-color: #10b981 !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+        }
+
+        /* Hide/show sections */
+        .section-hidden {
+            display: none;
+        }
+
+        .section-visible {
+            display: block;
+        }
+
+        /* Canvas container responsive heights */
+        .canvas-container {
+            height: 300px;
+        }
+
+        @media (min-width: 640px) {
+            .canvas-container {
+                height: 350px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .canvas-container {
+                height: 400px;
+            }
+        }
+
+        /* Mobile toolbar adjustments */
+        @media (max-width: 640px) {
+            .toolbar-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .pen-sizes {
+                justify-content: center;
+            }
+            
+            .action-buttons {
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body class="min-h-screen bg-gray-50">
-    <div class="max-w-4xl mx-auto p-6">
+    <div class="max-w-4xl mx-auto p-3 sm:p-4 lg:p-6">
         <!-- Header -->
-        <div class="text-center mb-8 animate-fade-in">
-            <h1 class="text-4xl font-bold title-gradient mb-3">
+        <div class="text-center mb-4 sm:mb-6 animate-fade-in">
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold title-gradient mb-1 sm:mb-2">
                 Digital Guestbook
             </h1>
-            <p class="text-lg text-gray-600">Leave your signature and make it memorable</p>
+            <p class="text-sm sm:text-base lg:text-lg text-gray-600">Leave your signature</p>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="mb-6 animate-fade-in">
+            <div class="flex items-center justify-center space-x-4">
+                <div class="flex items-center">
+                    <div id="step1-indicator" class="step-indicator active w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold">
+                        1
+                    </div>
+                    <span class="ml-2 text-sm font-medium text-gray-700">Enter Name</span>
+                </div>
+                <div class="w-8 h-0.5 bg-gray-300"></div>
+                <div class="flex items-center">
+                    <div id="step2-indicator" class="step-indicator w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-sm font-semibold">
+                        2
+                    </div>
+                    <span class="ml-2 text-sm font-medium text-gray-700">Create Signature</span>
+                </div>
+            </div>
         </div>
         
         <!-- Main Card -->
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden animate-fade-in">
-            <div class="p-8">
-                <h2 class="text-2xl font-semibold text-center text-gray-800 mb-8">
-                    Create Your Signature
+        <div class="bg-white rounded-xl lg:rounded-2xl shadow-lg lg:shadow-xl border border-gray-200 overflow-hidden animate-fade-in">
+            <div class="p-4 sm:p-6 lg:p-8">
+                <h2 id="sectionTitle" class="text-lg sm:text-xl lg:text-2xl font-semibold text-center text-gray-800 mb-4 sm:mb-6 lg:mb-8">
+                    Enter Your Name
                 </h2>
                 
-                <form id="guestbookForm" method="POST" class="space-y-8">
+                <form id="guestbookForm" method="POST" class="space-y-4 sm:space-y-6 lg:space-y-8">
                     <!-- CSRF Token -->
                     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                     
@@ -118,115 +216,184 @@
                     <input type="hidden" name="event" value="{{ event.id }}">
                     {% endif %}
                     
-                    <!-- Toolbar -->
-                    <div class="glass-effect rounded-xl p-6">
-                        <div class="flex items-center justify-between">
-                            <!-- Pen Size Controls -->
-                            <div class="flex items-center gap-4">
-                                <span class="text-sm font-medium text-gray-700 flex items-center gap-2">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M12 19l7-7 3 3-7 7-3-3z"/>
-                                        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
-                                        <path d="M2 2l7.586 7.586"/>
-                                        <circle cx="11" cy="11" r="2"/>
+                    <!-- Step 1: Name Input Section -->
+                    <div id="nameSection" class="section-visible">
+                        <div class="max-w-md mx-auto">
+                            <div class="mb-6">
+                                <label for="nameInput" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Full Name <span class="text-red-500">*</span>
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="nameInput" 
+                                    name="name"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                                    placeholder="Enter your full name"
+                                    autocomplete="name"
+                                    required
+                                    maxlength="100"
+                                >
+                                <div id="nameError" class="mt-2 text-sm text-red-600 hidden"></div>
+                                <div id="nameSuccess" class="mt-2 text-sm text-green-600 hidden">
+                                    <svg class="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                     </svg>
-                                    Pen Size
-                                </span>
-                                <div class="flex gap-2">
-                                    <button type="button" onclick="setPenSize(2)" 
-                                            class="pen-size-btn focus-ring w-12 h-12 rounded-lg border-2 border-gray-200 flex items-center justify-center transition-all duration-200 hover:border-blue-300" 
-                                            id="size-2" title="Fine">
-                                        <div class="w-1 h-1 bg-gray-600 rounded-full"></div>
-                                    </button>
-                                    <button type="button" onclick="setPenSize(4)" 
-                                            class="pen-size-btn selected focus-ring w-12 h-12 rounded-lg border-2 border-gray-200 flex items-center justify-center transition-all duration-200 hover:border-blue-300" 
-                                            id="size-4" title="Normal">
-                                        <div class="w-2 h-2 bg-gray-600 rounded-full"></div>
-                                    </button>
-                                    <button type="button" onclick="setPenSize(6)" 
-                                            class="pen-size-btn focus-ring w-12 h-12 rounded-lg border-2 border-gray-200 flex items-center justify-center transition-all duration-200 hover:border-blue-300" 
-                                            id="size-6" title="Medium">
-                                        <div class="w-3 h-3 bg-gray-600 rounded-full"></div>
-                                    </button>
-                                    <button type="button" onclick="setPenSize(10)" 
-                                            class="pen-size-btn focus-ring w-12 h-12 rounded-lg border-2 border-gray-200 flex items-center justify-center transition-all duration-200 hover:border-blue-300" 
-                                            id="size-10" title="Bold">
-                                        <div class="w-4 h-4 bg-gray-600 rounded-full"></div>
-                                    </button>
+                                    Name looks good!
                                 </div>
+                                <p class="mt-1 text-xs text-gray-500">2-100 characters, letters only</p>
                             </div>
                             
-                            <!-- Action Buttons -->
-                            <div class="flex items-center gap-3">
-                                <button type="button" id="undoButton" onclick="undoDrawing()" 
-                                        class="focus-ring p-3 bg-gray-100 rounded-lg text-gray-600 hover:bg-gray-200 transition-all duration-200" 
-                                        title="Undo">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M9 14 4 9l5-5"/>
-                                        <path d="M4 9h16"/>
-                                    </svg>
-                                </button>
-                                <button type="button" id="redoButton" onclick="redoDrawing()" 
-                                        class="focus-ring p-3 bg-gray-100 rounded-lg text-gray-600 hover:bg-gray-200 transition-all duration-200" 
-                                        title="Redo">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="m15 14 5-5-5-5"/>
-                                        <path d="M4 9h16"/>
-                                    </svg>
-                                </button>
-                                <button type="button" onclick="clearCanvas()"
-                                        class="focus-ring p-3 bg-red-50 rounded-lg text-red-600 hover:bg-red-100 transition-all duration-200" 
-                                        title="Clear Canvas">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M20 5H9l-7 7 7 7h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z"/>
-                                        <line x1="18" y1="9" x2="12" y2="15"/>
-                                        <line x1="12" y1="9" x2="18" y2="15"/>
+                            <div class="flex justify-center">
+                                <button 
+                                    type="button" 
+                                    id="nextToSignatureBtn"
+                                    class="btn-primary focus-ring px-8 py-3 text-white rounded-lg font-semibold text-base shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                    disabled
+                                >
+                                    <span>Next: Create Signature</span>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="m9 18 6-6-6-6"/>
                                     </svg>
                                 </button>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Canvas Container -->
-                    <div class="relative">
-                        <div id="canvasContainer" class="relative rounded-xl shadow-lg overflow-hidden border border-gray-200" style="height: 400px;">
-                            <div class="absolute inset-0 signature-card transition-all duration-300" id="canvasBackground">
-                                <!-- Subtle grid pattern -->
-                                <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(circle at 2px 2px, rgba(0,0,0,0.15) 1px, transparent 0); background-size: 20px 20px;"></div>
-                                <canvas id="signatureCanvas" class="absolute inset-0 w-full h-full"></canvas>
-                            </div>
-                        </div>
-                        <div class="mt-4 text-center">
-                            <p class="text-sm text-gray-500">Sign above with your mouse or finger</p>
                         </div>
                     </div>
 
-                    <!-- Submit Button -->
-                    <div class="flex justify-center pt-2">
-                        <button type="submit" id="submitBtn"
-                                class="btn-primary focus-ring px-8 py-4 text-white rounded-xl font-semibold text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/>
-                            </svg>
-                            Save Signature
-                        </button>
+                    <!-- Step 2: Signature Section -->
+                    <div id="signatureSection" class="section-hidden">
+                        <!-- User greeting -->
+                        <div id="userGreeting" class="text-center mb-6">
+                            <p class="text-lg text-gray-700">
+                                Hello <span id="greetingName" class="font-semibold text-blue-600"></span>! 
+                                <br><span class="text-sm text-gray-600">Please create your signature below</span>
+                            </p>
+                        </div>
+
+                        <!-- Signature Toolbar -->
+                        <div class="glass-effect rounded-lg lg:rounded-xl p-3 sm:p-4 lg:p-6 mb-6">
+                            <div class="toolbar-content flex items-center justify-between">
+                                <!-- Pen Size Controls -->
+                                <div class="flex items-center gap-2 sm:gap-4">
+                                    <span class="text-xs sm:text-sm font-medium text-gray-700 flex items-center gap-1 sm:gap-2">
+                                        <svg width="16" height="16" class="sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                                            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                                            <path d="M2 2l7.586 7.586"/>
+                                            <circle cx="11" cy="11" r="2"/>
+                                        </svg>
+                                        <span class="hidden sm:inline">Pen Size</span>
+                                        <span class="sm:hidden">Size</span>
+                                    </span>
+                                    <div class="pen-sizes flex gap-1 sm:gap-2">
+                                        <button type="button" onclick="setPenSize(2)" 
+                                                class="pen-size-btn focus-ring w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-md lg:rounded-lg border-2 border-gray-200 flex items-center justify-center transition-all duration-200 hover:border-blue-300" 
+                                                id="size-2" title="Fine">
+                                            <div class="w-0.5 h-0.5 sm:w-1 sm:h-1 bg-gray-600 rounded-full"></div>
+                                        </button>
+                                        <button type="button" onclick="setPenSize(4)" 
+                                                class="pen-size-btn selected focus-ring w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-md lg:rounded-lg border-2 border-gray-200 flex items-center justify-center transition-all duration-200 hover:border-blue-300" 
+                                                id="size-4" title="Normal">
+                                            <div class="w-1 h-1 sm:w-1.5 sm:h-1.5 lg:w-2 lg:h-2 bg-gray-600 rounded-full"></div>
+                                        </button>
+                                        <button type="button" onclick="setPenSize(6)" 
+                                                class="pen-size-btn focus-ring w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-md lg:rounded-lg border-2 border-gray-200 flex items-center justify-center transition-all duration-200 hover:border-blue-300" 
+                                                id="size-6" title="Medium">
+                                            <div class="w-2 h-2 sm:w-2.5 sm:h-2.5 lg:w-3 lg:h-3 bg-gray-600 rounded-full"></div>
+                                        </button>
+                                        <button type="button" onclick="setPenSize(10)" 
+                                                class="pen-size-btn focus-ring w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-md lg:rounded-lg border-2 border-gray-200 flex items-center justify-center transition-all duration-200 hover:border-blue-300" 
+                                                id="size-10" title="Bold">
+                                            <div class="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 bg-gray-600 rounded-full"></div>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Action Buttons -->
+                                <div class="action-buttons flex items-center gap-1 sm:gap-2 lg:gap-3">
+                                    <button type="button" id="undoButton" onclick="undoDrawing()" 
+                                            class="focus-ring p-2 sm:p-2.5 lg:p-3 bg-gray-100 rounded-md lg:rounded-lg text-gray-600 hover:bg-gray-200 transition-all duration-200" 
+                                            title="Undo">
+                                        <svg width="16" height="16" class="sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M9 14 4 9l5-5"/>
+                                            <path d="M4 9h16"/>
+                                        </svg>
+                                    </button>
+                                    <button type="button" id="redoButton" onclick="redoDrawing()" 
+                                            class="focus-ring p-2 sm:p-2.5 lg:p-3 bg-gray-100 rounded-md lg:rounded-lg text-gray-600 hover:bg-gray-200 transition-all duration-200" 
+                                            title="Redo">
+                                        <svg width="16" height="16" class="sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="m15 14 5-5-5-5"/>
+                                            <path d="M4 9h16"/>
+                                        </svg>
+                                    </button>
+                                    <button type="button" onclick="clearCanvas()"
+                                            class="focus-ring p-2 sm:p-2.5 lg:p-3 bg-red-50 rounded-md lg:rounded-lg text-red-600 hover:bg-red-100 transition-all duration-200" 
+                                            title="Clear Canvas">
+                                        <svg width="16" height="16" class="sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M20 5H9l-7 7 7 7h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z"/>
+                                            <line x1="18" y1="9" x2="12" y2="15"/>
+                                            <line x1="12" y1="9" x2="18" y2="15"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Canvas Container -->
+                        <div class="relative mb-6">
+                            <div id="canvasContainer" class="relative canvas-container rounded-lg lg:rounded-xl shadow-md lg:shadow-lg overflow-hidden border border-gray-200">
+                                <div class="absolute inset-0 signature-card transition-all duration-300" id="canvasBackground">
+                                    <!-- Subtle grid pattern -->
+                                    <div class="absolute inset-0 opacity-5" style="background-image: radial-gradient(circle at 2px 2px, rgba(0,0,0,0.15) 1px, transparent 0); background-size: 20px 20px;"></div>
+                                    <canvas id="signatureCanvas" class="absolute inset-0 w-full h-full"></canvas>
+                                </div>
+                            </div>
+                            <div class="mt-2 sm:mt-3 lg:mt-4 text-center">
+                                <p class="text-xs sm:text-sm text-gray-500">
+                                    <span class="hidden sm:inline">Sign above with your mouse or finger</span>
+                                    <span class="sm:hidden">Draw your signature above</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex justify-center gap-3">
+                            <button type="button" id="backToNameBtn"
+                                    class="btn-secondary focus-ring px-6 py-3 rounded-lg font-semibold text-base shadow-md flex items-center gap-2">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="m15 18-6-6 6-6"/>
+                                </svg>
+                                <span>Back</span>
+                            </button>
+                            <button type="submit" id="submitBtn"
+                                    class="btn-primary focus-ring px-6 py-3 sm:px-8 sm:py-4 text-white rounded-lg font-semibold text-base shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7Z"/>
+                                </svg>
+                                <span>Save Signature</span>
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
         
         <!-- Footer -->
-        <div class="text-center mt-8 text-gray-500">
-            <p class="text-sm">Thank you for signing our guestbook</p>
+        <div class="text-center mt-4 sm:mt-6 lg:mt-8 text-gray-500">
+            <p class="text-xs sm:text-sm">Thank you for signing our guestbook</p>
         </div>
     </div>
 
     <script>
         $(document).ready(function() {
+            // Global variables
+            let currentStep = 1;
+            let userName = '';
+            let isSubmitting = false;
+            
             // Canvas setup
             const canvas = $('#signatureCanvas')[0];
             const ctx = canvas.getContext('2d');
-            const canvasBackground = $('#canvasBackground');
             
             let isDrawing = false;
             let lastX = 0;
@@ -234,19 +401,122 @@
             let currentPenSize = 4;
             let canvasScale = 1;
             let currentPath = [];
-            let isSubmitting = false; // Flag to prevent multiple submissions
 
             // Drawing history for undo/redo
             let drawingHistory = [];
             let historyIndex = -1;
-            const maxHistoryLength = 50;
+            const maxHistoryLength = 30;
 
-            // Initialize canvas with professional styling
+            // Name validation
+            function validateName(name) {
+                const trimmedName = name.trim();
+                
+                if (!trimmedName) {
+                    return { valid: false, message: 'Name is required.' };
+                }
+                
+                if (trimmedName.length < 2) {
+                    return { valid: false, message: 'Name must be at least 2 characters long.' };
+                }
+                
+                if (trimmedName.length > 100) {
+                    return { valid: false, message: 'Name must be no more than 100 characters long.' };
+                }
+                
+                // Only allow letters, spaces, hyphens, and apostrophes
+                if (!/^[a-zA-Z\s\-']+$/.test(trimmedName)) {
+                    return { valid: false, message: 'Name can only contain letters, spaces, hyphens, and apostrophes.' };
+                }
+                
+                return { valid: true, message: 'Name is valid!' };
+            }
+
+            // Real-time name validation
+            $('#nameInput').on('input', function() {
+                const name = $(this).val();
+                const validation = validateName(name);
+                const $input = $(this);
+                const $error = $('#nameError');
+                const $success = $('#nameSuccess');
+                const $nextBtn = $('#nextToSignatureBtn');
+                
+                // Reset classes
+                $input.removeClass('input-error input-valid');
+                $error.addClass('hidden');
+                $success.addClass('hidden');
+                
+                if (name.trim()) {
+                    if (validation.valid) {
+                        $input.addClass('input-valid');
+                        $success.text(validation.message).removeClass('hidden');
+                        $nextBtn.prop('disabled', false);
+                    } else {
+                        $input.addClass('input-error');
+                        $error.text(validation.message).removeClass('hidden');
+                        $nextBtn.prop('disabled', true);
+                    }
+                } else {
+                    $nextBtn.prop('disabled', true);
+                }
+            });
+
+            // Step navigation
+            function showStep(step) {
+                if (step === 1) {
+                    $('#nameSection').removeClass('section-hidden').addClass('section-visible animate-slide-in');
+                    $('#signatureSection').removeClass('section-visible').addClass('section-hidden');
+                    $('#sectionTitle').text('Enter Your Name');
+                    $('#step1-indicator').addClass('active').removeClass('completed');
+                    $('#step2-indicator').removeClass('active').addClass('bg-gray-300');
+                    currentStep = 1;
+                } else if (step === 2) {
+                    $('#nameSection').removeClass('section-visible').addClass('section-hidden');
+                    $('#signatureSection').removeClass('section-hidden').addClass('section-visible animate-slide-in');
+                    $('#sectionTitle').text('Create Your Signature');
+                    $('#step1-indicator').removeClass('active').addClass('completed');
+                    $('#step2-indicator').addClass('active').removeClass('bg-gray-300');
+                    
+                    // Update greeting
+                    userName = $('#nameInput').val().trim();
+                    $('#greetingName').text(userName);
+                    
+                    currentStep = 2;
+                    
+                    // Initialize canvas when signature section is shown
+                    setTimeout(() => {
+                        initializeCanvas();
+                        setPenSize(4);
+                        saveCanvasState();
+                    }, 100);
+                }
+            }
+
+            // Next button click
+            $('#nextToSignatureBtn').on('click', function() {
+                const name = $('#nameInput').val();
+                const validation = validateName(name);
+                
+                if (validation.valid) {
+                    showStep(2);
+                } else {
+                    $('#nameInput').addClass('input-error');
+                    $('#nameError').text(validation.message).removeClass('hidden');
+                }
+            });
+
+            // Back button click
+            $('#backToNameBtn').on('click', function() {
+                showStep(1);
+            });
+
+            // Canvas initialization
             function initializeCanvas() {
+                if (!canvas) return;
+                
                 const parent = canvas.parentElement;
                 const rect = parent.getBoundingClientRect();
                 
-                const devicePixelRatio = window.devicePixelRatio || 1;
+                const devicePixelRatio = Math.min(window.devicePixelRatio || 1, 2);
                 canvas.width = rect.width * devicePixelRatio;
                 canvas.height = rect.height * devicePixelRatio;
                 canvas.style.width = rect.width + 'px';
@@ -256,7 +526,7 @@
                 ctx.scale(devicePixelRatio, devicePixelRatio);
                 
                 // Professional drawing properties
-                ctx.strokeStyle = '#1e293b'; // Professional dark gray
+                ctx.strokeStyle = '#1e293b';
                 ctx.lineJoin = 'round';
                 ctx.lineCap = 'round';
                 ctx.lineWidth = currentPenSize;
@@ -270,7 +540,7 @@
             // Set pen size
             window.setPenSize = function(size) {
                 currentPenSize = size;
-                ctx.lineWidth = size;
+                if (ctx) ctx.lineWidth = size;
                 $('.pen-size-btn').removeClass('selected');
                 $(`#size-${size}`).addClass('selected');
             };
@@ -330,6 +600,8 @@
 
             // History management
             function saveCanvasState() {
+                if (!ctx) return;
+                
                 if (historyIndex < drawingHistory.length - 1) {
                     drawingHistory = drawingHistory.slice(0, historyIndex + 1);
                 }
@@ -367,293 +639,287 @@
                 $('#redoButton').prop('disabled', historyIndex >= drawingHistory.length - 1).css('opacity', historyIndex >= drawingHistory.length - 1 ? '0.5' : '1');
             }
 
-
-
-            // Event listeners
-            canvas.addEventListener('mousedown', startDrawing, {passive: false});
-            canvas.addEventListener('mousemove', draw, {passive: false});
-            canvas.addEventListener('mouseup', stopDrawing, {passive: false});
-            canvas.addEventListener('mouseout', stopDrawing, {passive: false});
-
-            canvas.addEventListener('touchstart', startDrawing, {passive: false});
-            canvas.addEventListener('touchmove', draw, {passive: false});
-            canvas.addEventListener('touchend', stopDrawing, {passive: false});
-            canvas.addEventListener('touchcancel', stopDrawing, {passive: false});
-
-// Replace the existing form submission code with this improved version
-
-$('#guestbookForm').on('submit', function(e) {
-    e.preventDefault();
-    
-    // Prevent multiple submissions
-    if (isSubmitting) {
-        return;
-    }
-    
-    isSubmitting = true;
-    const $submitBtn = $('#submitBtn');
-    $submitBtn.prop('disabled', true);
-    
-    // Professional loading dialog
-    Swal.fire({
-        title: 'Processing Your Signature',
-        html: `
-            <div class="flex flex-col items-center space-y-4">
-                <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-                <p class="text-gray-600 text-sm">Please wait while we save your signature...</p>
-            </div>
-        `,
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        showConfirmButton: false,
-        customClass: {
-            popup: 'rounded-xl shadow-2xl',
-            title: 'text-xl font-semibold text-gray-800 mb-4'
-        },
-        background: '#ffffff',
-        backdrop: 'rgba(0, 0, 0, 0.4)'
-    });
-
-    try {
-        // Create final composite image
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-        tempCanvas.width = canvas.width;
-        tempCanvas.height = canvas.height;
-        
-        tempCtx.scale(canvasScale, canvasScale);
-        
-        // Draw clean white background
-        tempCtx.fillStyle = '#ffffff';
-        tempCtx.fillRect(0, 0, canvas.width / canvasScale, canvas.height / canvasScale);
-        
-        // Draw the signature on top
-        tempCtx.drawImage(canvas, 0, 0, canvas.width / canvasScale, canvas.height / canvasScale);
-        
-        const dataURL = tempCanvas.toDataURL('image/png', 1.0);
-        $('#signatureInput').val(dataURL);
-        $('#backgroundColorInput').val('professional');
-
-        // Get submit URL
-        const pathParts = window.location.pathname.split('/');
-        const submitUrl = pathParts.length > 1 && pathParts[1] && !isNaN(pathParts[1]) 
-            ? `/${pathParts[1]}/message/` 
-            : '/message/';
-
-        // Submit with AJAX
-        $.ajax({
-            url: submitUrl,
-            type: 'POST',
-            data: $(this).serialize(),
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val()
-            },
-            timeout: 30000, // 30 second timeout
-            success: function(data) {
-                // Professional success dialog
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Signature Saved Successfully!',
-                    html: `
-                        <div class="text-center">
-                            <div class="mb-4">
-                                <div class="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                    </svg>
-                                </div>
-                                <p class="text-gray-600">${data.message || 'Your signature has been added to the guestbook.'}</p>
-                            </div>
-                        </div>
-                    `,
-                    confirmButtonText: 'Perfect!',
-                    confirmButtonColor: '#1e40af',
-                    customClass: {
-                        popup: 'rounded-xl shadow-2xl',
-                        title: 'text-xl font-semibold text-gray-800 mb-2',
-                        confirmButton: 'px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg'
-                    },
-                    background: '#ffffff',
-                    backdrop: 'rgba(0, 0, 0, 0.4)',
-                    allowOutsideClick: false,
-                    allowEscapeKey: false
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Clear canvas after confirmation
-                        ctx.clearRect(0, 0, canvas.width / canvasScale, canvas.height / canvasScale);
-                        drawingHistory = [];
-                        historyIndex = -1;
-                        saveCanvasState();
-
-                        if (data.redirect_url) {
-                            window.location.href = data.redirect_url;
-                        }
-                    }
-                });
-            },
-            error: function(xhr, status, error) {
-                console.error('AJAX Error:', xhr.responseText);
-                let errorMessage = 'Something went wrong while saving your signature.';
+            // Canvas event listeners (will be bound when canvas is initialized)
+            function bindCanvasEvents() {
+                if (!canvas) return;
                 
-                try {
-                    const response = JSON.parse(xhr.responseText);
-                    errorMessage = response.message || response.errors?.join(', ') || errorMessage;
-                } catch (e) {
-                    if (xhr.status === 0) {
-                        errorMessage = 'Network error - please check your connection and try again.';
-                    } else if (status === 'timeout') {
-                        errorMessage = 'Request timed out - please try again.';
+                canvas.addEventListener('mousedown', startDrawing, {passive: false});
+                canvas.addEventListener('mousemove', draw, {passive: false});
+                canvas.addEventListener('mouseup', stopDrawing, {passive: false});
+                canvas.addEventListener('mouseout', stopDrawing, {passive: false});
+
+                canvas.addEventListener('touchstart', startDrawing, {passive: false});
+                canvas.addEventListener('touchmove', draw, {passive: false});
+                canvas.addEventListener('touchend', stopDrawing, {passive: false});
+                canvas.addEventListener('touchcancel', stopDrawing, {passive: false});
+            }
+
+            // Bind canvas events when signature section becomes visible
+            $(document).on('DOMNodeInserted', function(e) {
+                if ($(e.target).attr('id') === 'signatureSection' && $(e.target).hasClass('section-visible')) {
+                    setTimeout(bindCanvasEvents, 100);
+                }
+            });
+
+            // Form submission
+            $('#guestbookForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                if (isSubmitting) return;
+                
+                // Validate current step
+                if (currentStep === 1) {
+                    const name = $('#nameInput').val();
+                    const validation = validateName(name);
+                    
+                    if (validation.valid) {
+                        showStep(2);
                     } else {
-                        errorMessage = `Error ${xhr.status}: ${error}`;
+                        $('#nameInput').addClass('input-error');
+                        $('#nameError').text(validation.message).removeClass('hidden');
                     }
+                    return;
                 }
                 
-                // Professional error dialog
+                // Final validation before submission
+                const name = $('#nameInput').val().trim();
+                const nameValidation = validateName(name);
+                
+                if (!nameValidation.valid) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Name',
+                        text: nameValidation.message,
+                        confirmButtonColor: '#ef4444'
+                    });
+                    showStep(1);
+                    return;
+                }
+                
+                if (!canvas || !ctx) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Canvas Error',
+                        text: 'Signature canvas not ready. Please try again.',
+                        confirmButtonColor: '#ef4444'
+                    });
+                    return;
+                }
+                
+                isSubmitting = true;
+                const $submitBtn = $('#submitBtn');
+                $submitBtn.prop('disabled', true);
+                
+                // Show loading dialog
                 Swal.fire({
-                    icon: 'error',
-                    title: 'Unable to Save Signature',
+                    title: 'Saving...',
                     html: `
-                        <div class="text-center">
-                            <div class="mb-4">
-                                <div class="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                </div>
-                                <p class="text-gray-600">${errorMessage}</p>
-                            </div>
+                        <div class="flex flex-col items-center space-y-3">
+                            <div class="w-12 h-12 border-3 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                            <p class="text-gray-600 text-sm">Saving ${name}'s signature</p>
                         </div>
                     `,
-                    confirmButtonText: 'Try Again',
-                    confirmButtonColor: '#ef4444',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showConfirmButton: false,
                     customClass: {
-                        popup: 'rounded-xl shadow-2xl',
-                        title: 'text-xl font-semibold text-gray-800 mb-2',
-                        confirmButton: 'px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg'
+                        popup: 'rounded-lg shadow-xl',
+                        title: 'text-lg font-semibold text-gray-800 mb-3'
                     },
                     background: '#ffffff',
-                    backdrop: 'rgba(0, 0, 0, 0.4)',
-                    allowOutsideClick: false,
-                    allowEscapeKey: false
+                    backdrop: 'rgba(0, 0, 0, 0.4)'
                 });
-            },
-            complete: function() {
-                // Re-enable the form
-                isSubmitting = false;
-                $submitBtn.prop('disabled', false);
-            }
-        });
 
-    } catch (error) {
-        console.error('Error:', error);
-        
-        Swal.fire({
-            icon: 'error',
-            title: 'Processing Error',
-            html: `
-                <div class="text-center">
-                    <div class="mb-4">
-                        <div class="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <p class="text-gray-600">${error.message || 'Failed to process your signature. Please try again.'}</p>
-                    </div>
-                </div>
-            `,
-            confirmButtonText: 'Try Again',
-            confirmButtonColor: '#ef4444',
-            customClass: {
-                popup: 'rounded-xl shadow-2xl',
-                title: 'text-xl font-semibold text-gray-800 mb-2',
-                confirmButton: 'px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg'
-            },
-            background: '#ffffff',
-            backdrop: 'rgba(0, 0, 0, 0.4)',
-            allowOutsideClick: false,
-            allowEscapeKey: false
-        });
-        
-        // Re-enable the form
-        isSubmitting = false;
-        $submitBtn.prop('disabled', false);
-    }
-});
+                try {
+                    // Create final composite image
+                    const tempCanvas = document.createElement('canvas');
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCanvas.width = canvas.width;
+                    tempCanvas.height = canvas.height;
+                    
+                    tempCtx.scale(canvasScale, canvasScale);
+                    
+                    // Draw clean white background
+                    tempCtx.fillStyle = '#ffffff';
+                    tempCtx.fillRect(0, 0, canvas.width / canvasScale, canvas.height / canvasScale);
+                    
+                    // Draw the signature on top
+                    tempCtx.drawImage(canvas, 0, 0, canvas.width / canvasScale, canvas.height / canvasScale);
+                    
+                    const dataURL = tempCanvas.toDataURL('image/png', 0.95);
+                    $('#signatureInput').val(dataURL);
+                    $('#backgroundColorInput').val('professional');
 
-// Also update the clear canvas function for consistency
-window.clearCanvas = function() {
-    Swal.fire({
-        title: 'Clear Canvas?',
-        html: `
-            <div class="text-center">
-                <div class="mb-4">
-                    <div class="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
-                        <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L12.732 4.5c-.77-.833-2.186-.833-2.956 0L2.858 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                        </svg>
-                    </div>
-                    <p class="text-gray-600">This will remove your entire signature and cannot be undone.</p>
-                </div>
-            </div>
-        `,
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#6b7280',
-        confirmButtonText: 'Yes, clear it',
-        cancelButtonText: 'Cancel',
-        customClass: {
-            popup: 'rounded-xl shadow-2xl',
-            title: 'text-xl font-semibold text-gray-800 mb-2',
-            confirmButton: 'px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg mr-2',
-            cancelButton: 'px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg'
-        },
-        background: '#ffffff',
-        backdrop: 'rgba(0, 0, 0, 0.4)'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            ctx.clearRect(0, 0, canvas.width / canvasScale, canvas.height / canvasScale);
-            saveCanvasState();
-            
-            Swal.fire({
-                title: 'Canvas Cleared',
-                html: `
-                    <div class="text-center">
-                        <div class="mb-4">
-                            <div class="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                            </div>
-                            <p class="text-gray-600">You can now create a new signature.</p>
-                        </div>
-                    </div>
-                `,
-                timer: 2000,
-                showConfirmButton: false,
-                customClass: {
-                    popup: 'rounded-xl shadow-2xl',
-                    title: 'text-xl font-semibold text-gray-800 mb-2'
-                },
-                background: '#ffffff',
-                backdrop: 'rgba(0, 0, 0, 0.4)'
+                    // Get submit URL
+                    const pathParts = window.location.pathname.split('/');
+                    const submitUrl = pathParts.length > 1 && pathParts[1] && !isNaN(pathParts[1]) 
+                        ? `/${pathParts[1]}/message/` 
+                        : '/message/';
+
+                    // Submit with AJAX
+                    $.ajax({
+                        url: submitUrl,
+                        type: 'POST',
+                        data: $(this).serialize(),
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val()
+                        },
+                        timeout: 20000,
+                        success: function(data) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Saved!',
+                                html: `
+                                    <div class="text-center">
+                                        <p class="text-gray-600">${data.message || `Thank you ${name} for signing our guestbook!`}</p>
+                                    </div>
+                                `,
+                                confirmButtonText: 'Great!',
+                                confirmButtonColor: '#1e40af',
+                                customClass: {
+                                    popup: 'rounded-lg shadow-xl',
+                                    title: 'text-lg font-semibold text-gray-800 mb-2',
+                                    confirmButton: 'px-4 py-2 rounded-lg font-semibold transition-all duration-200'
+                                },
+                                background: '#ffffff',
+                                backdrop: 'rgba(0, 0, 0, 0.4)',
+                                allowOutsideClick: false,
+                                allowEscapeKey: false
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    // Reset form
+                                    $('#nameInput').val('').removeClass('input-valid input-error');
+                                    $('#nameError, #nameSuccess').addClass('hidden');
+                                    
+                                    if (ctx) {
+                                        ctx.clearRect(0, 0, canvas.width / canvasScale, canvas.height / canvasScale);
+                                        drawingHistory = [];
+                                        historyIndex = -1;
+                                        saveCanvasState();
+                                    }
+                                    
+                                    showStep(1);
+
+                                    if (data.redirect_url) {
+                                        window.location.href = data.redirect_url;
+                                    }
+                                }
+                            });
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('AJAX Error:', xhr.responseText);
+                            let errorMessage = 'Failed to save signature.';
+                            
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                errorMessage = response.message || (response.errors && response.errors.join(', ')) || errorMessage;
+                            } catch (e) {
+                                if (xhr.status === 0) {
+                                    errorMessage = 'Network error - check your connection.';
+                                } else if (status === 'timeout') {
+                                    errorMessage = 'Request timed out - try again.';
+                                } else {
+                                    errorMessage = `Error ${xhr.status}: ${error}`;
+                                }
+                            }
+                            
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                html: `<p class="text-gray-600">${errorMessage}</p>`,
+                                confirmButtonText: 'Try Again',
+                                confirmButtonColor: '#ef4444',
+                                customClass: {
+                                    popup: 'rounded-lg shadow-xl',
+                                    title: 'text-lg font-semibold text-gray-800 mb-2',
+                                    confirmButton: 'px-4 py-2 rounded-lg font-semibold transition-all duration-200'
+                                },
+                                background: '#ffffff',
+                                backdrop: 'rgba(0, 0, 0, 0.4)'
+                            });
+                        },
+                        complete: function() {
+                            isSubmitting = false;
+                            $submitBtn.prop('disabled', false);
+                        }
+                    });
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        html: `<p class="text-gray-600">${error.message || 'Processing failed. Try again.'}</p>`,
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#ef4444',
+                        customClass: {
+                            popup: 'rounded-lg shadow-xl',
+                            confirmButton: 'px-4 py-2 rounded-lg font-semibold'
+                        }
+                    });
+                    
+                    isSubmitting = false;
+                    $submitBtn.prop('disabled', false);
+                }
             });
-        }
-    });
-};
 
-            // Resize handling
+            // Clear canvas function
+            window.clearCanvas = function() {
+                Swal.fire({
+                    title: 'Clear Canvas?',
+                    html: '<p class="text-gray-600 text-sm">This will remove your signature.</p>',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Clear',
+                    cancelButtonText: 'Cancel',
+                    customClass: {
+                        popup: 'rounded-lg shadow-xl',
+                        title: 'text-lg font-semibold text-gray-800 mb-2',
+                        confirmButton: 'px-4 py-2 rounded-lg font-semibold mr-2',
+                        cancelButton: 'px-4 py-2 rounded-lg font-semibold'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed && ctx) {
+                        ctx.clearRect(0, 0, canvas.width / canvasScale, canvas.height / canvasScale);
+                        saveCanvasState();
+                        
+                        Swal.fire({
+                            title: 'Cleared',
+                            html: '<p class="text-gray-600 text-sm">Canvas is ready for a new signature.</p>',
+                            timer: 1500,
+                            showConfirmButton: false,
+                            customClass: {
+                                popup: 'rounded-lg shadow-xl',
+                                title: 'text-lg font-semibold text-gray-800'
+                            }
+                        });
+                    }
+                });
+            };
+
+            // Debounced resize handling
+            let resizeTimeout;
             $(window).on('resize', function() {
-                const currentDrawing = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                initializeCanvas();
-                ctx.putImageData(currentDrawing, 0, 0);
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(function() {
+                    if (currentStep === 2 && ctx && canvas) {
+                        const currentDrawing = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        initializeCanvas();
+                        ctx.putImageData(currentDrawing, 0, 0);
+                    }
+                }, 250);
             });
 
-            // Initialize everything
-            initializeCanvas();
-            setPenSize(4);
-            saveCanvasState();
+            // Initialize
+            showStep(1);
+            
+            // Bind canvas events after a short delay to ensure DOM is ready
+            setTimeout(() => {
+                bindCanvasEvents();
+            }, 500);
         });
     </script>
 </body>

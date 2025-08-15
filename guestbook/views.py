@@ -48,6 +48,7 @@ class EventSearchView(View):
             return JsonResponse({'events': data})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+
 @method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
 class LogoutView(View):
     def get(self, request):
@@ -135,15 +136,16 @@ class GuestbookView(View):
         """Notify connected WebSocket clients of new message"""
         channel_layer = get_channel_layer()
 
-        #Prepare message data
-        message_data ={
+        # Prepare message data
+        message_data = {
             'id': entry.id,
+            'name': entry.name,
             'signature_base64': entry.signature_base64,
             'created_at': entry.created_at.strftime('%b %d, %Y %I:%M %p'),
             'event_id': event_id
         }
 
-        #Send to appropriate group based on event_id
+        # Send to appropriate group based on event_id
         group_name = f'guestbook_{event_id}' if event_id else 'guestbook_all'
         async_to_sync(channel_layer.group_send)(
             group_name,
@@ -152,6 +154,7 @@ class GuestbookView(View):
                 'message': message_data
             }
         )
+    
     def post(self, request, *args, **kwargs):
         event_id = kwargs.get('event_id')
         event = get_object_or_404(Event, pk=event_id) if event_id else None
@@ -163,8 +166,14 @@ class GuestbookView(View):
                 entry = form.save(commit=False)
                 entry.event = event
                 
+                # Get the cleaned data
+                name = form.cleaned_data.get('name')
+                signature = form.cleaned_data.get('signature_base64')
+                
+                if name:
+                    entry.name = name.strip()
+                
                 # Validate and save base64 signature
-                signature = form.cleaned_data.get('signature')
                 if signature:
                     # Validate base64 format with comprehensive checks
                     if not re.match(r'^data:image\/(png|jpe?g|webp);base64,', signature):
@@ -189,21 +198,36 @@ class GuestbookView(View):
                 
                 return JsonResponse({
                     'status': 'success',
-                    'message': 'Thank you for signing our guestbook!',
-                    'redirect_url': reverse('guestbook:message', kwargs={'event_id': event_id}) if event_id else reverse('guestbook:message')
+                    'message': f'Thank you {entry.name} for signing our guestbook!',
+                    'redirect_url': reverse('guestbook:write_message', kwargs={'event_id': event_id}) if event_id else reverse('guestbook:messages_display', kwargs={'event_id': 1})  # Use a default event_id if needed
                 })
             else:
-                raise ValidationError(form.errors)
+                # Return form validation errors
+                errors = []
+                for field, field_errors in form.errors.items():
+                    for error in field_errors:
+                        if field == '__all__':
+                            errors.append(error)
+                        else:
+                            field_name = form.fields[field].label or field.replace('_', ' ').title()
+                            errors.append(f"{field_name}: {error}")
+                
+                return JsonResponse({
+                    'status': 'error',
+                    'errors': errors,
+                    'message': 'Please correct the errors below.'
+                }, status=400)
                 
         except ValidationError as e:
             return JsonResponse({
                 'status': 'error',
-                'error': str(e)
+                'message': str(e)
             }, status=400)
-        
-
-
-
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': f'An unexpected error occurred: {str(e)}'
+            }, status=500)
 
 @method_decorator(login_required(login_url='guestbook:login'), name='dispatch')   
 class MessagesView(View):
@@ -218,16 +242,15 @@ class MessagesView(View):
             'messages': messages,
         }
         return render(request, self.template_name, context)
-    
 
-@login_required(login_url='guestbook:login')  
-def dynamic(request, event_id):
-    event = get_object_or_404(Event, pk=event_id)
-    messages = event.entries.all().order_by('-created_at')
-    context = {
-        'messages': messages,
-    }
-    return render(request, 'guestbook/dynamic.html', context)
+# @login_required(login_url='guestbook:login')  
+# def dynamic(request, event_id):
+#     event = get_object_or_404(Event, pk=event_id)
+#     messages = event.entries.all().order_by('-created_at')
+#     context = {
+#         'messages': messages,
+#     }
+#     return render(request, 'guestbook/dynamic.html', context)
 
 @method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
 class MessageDisplayView(TemplateView):

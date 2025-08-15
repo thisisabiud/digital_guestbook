@@ -1,95 +1,123 @@
 {% extends 'guestbook/base.html' %}
-
 {% block content %}
-<div class="container mx-auto px-4 pt-4">
-    <div class="max-w-7xl mx-auto relative">
-        <div id="messageBoard" class="relative aspect-[1.414/1] w-full bg-white rounded-lg shadow-2xl">
-            <div class="absolute inset-0 p-8 bg-gradient-to-br from-gray-50 via-white to-gray-100">
-                <div class="absolute inset-0 border-[16px] border-double border-gray-200"></div>
+<div class="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
+    <div class="container mx-auto px-2 py-4">
+        <div class="max-w-full mx-auto">
+            <!-- Header -->
+            <div class="text-center mb-6">
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">Guest Messages</h1>
+                <p class="text-gray-600">Beautiful memories from our special event</p>
+            </div>
+
+            <!-- Message Board Container -->
+            <div id="messageBoard" class="relative bg-white rounded-2xl shadow-2xl border-4 border-amber-200 min-h-[85vh] overflow-hidden">
+                <!-- Background Texture -->
+                <div class="absolute inset-0 opacity-5">
+                    <div class="w-full h-full" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'20\' height=\'20\' viewBox=\'0 0 20 20\'%3E%3Cg fill=\'%23000\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'0.5\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'0.5\'/%3E%3C/g%3E%3C/svg%3E');"></div>
+                </div>
 
                 {% if event.overlay_image %}
-                <img 
-                    src="{{ event.overlay_image.url }}" 
+                <img
+                    src="{{ event.overlay_image.url }}"
                     alt="Background overlay"
-                    class="absolute inset-0 w-full h-full object-cover opacity-5 pointer-events-none"
+                    class="absolute inset-0 w-full h-full object-cover opacity-3 pointer-events-none"
                     loading="lazy"
                     decoding="async"
                 >
                 {% endif %}
 
-                <div class="relative w-full h-full overflow-hidden p-12">
-                    <div id="messagesContainer" class="relative w-full h-full">
-                        {% for message in messages %}
-                        <div 
-                            class="message-item absolute transition-transform duration-500 ease-out hover:z-50 hover:scale-110 cursor-pointer opacity-0 hover:shadow-xl will-change-transform"
-                            data-index="{{ forloop.counter0 }}"
-                            role="img"
-                            aria-label="Guest message {{ forloop.counter }}"
-                        >
-                            <div class="relative">
-                                <img 
-                                    src="{{message.signature_base64}}" 
-                                    alt="Guest message {{ forloop.counter }}"
-                                    class="w-full h-auto object-contain filter contrast-150"
-                                    loading="lazy"
-                                    decoding="async"
-                                >
+                <!-- Messages Container -->
+                <div id="messagesContainer" class="relative w-full h-full p-4">
+                    {% for message in messages %}
+                    <div
+                        class="message-item absolute transition-all duration-500 ease-out hover:z-50 hover:scale-110 hover:rotate-1 cursor-pointer opacity-0 will-change-transform group"
+                        data-index="{{ forloop.counter0 }}"
+                        data-name="{{ message.name|default:'Guest' }}"
+                        role="img"
+                        aria-label="Message from {{ message.name|default:'Guest' }}"
+                    >
+                        <!-- Sticky Note Card -->
+                        <div class="sticky-note bg-gradient-to-br from-yellow-200 via-yellow-100 to-amber-100 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-yellow-300">
+                            <!-- Pin/Tape Effect -->
+                            <div class="absolute -top-2 -right-2 w-6 h-6 bg-red-400 rounded-full shadow-md transform rotate-12 group-hover:rotate-45 transition-transform duration-300"></div>
+                            
+                            <!-- Name Tag -->
+                            <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 py-1.5 rounded-t-lg text-sm font-semibold shadow-sm">
+                                <span class="text-white drop-shadow-sm">{{ message.name|default:'Anonymous Guest' }}</span>
                             </div>
+                            
+                            <!-- Message Content -->
+                            <div class="p-3">
+                                <div class="message-content bg-white/70 rounded-md p-3 min-h-[120px] flex items-center justify-center">
+                                    <img
+                                        src="{{ message.signature_base64 }}"
+                                        alt="Message from {{ message.name|default:'Guest' }}"
+                                        class="w-full h-auto max-h-[100px] object-contain filter contrast-125 saturate-110"
+                                        loading="lazy"
+                                        decoding="async"
+                                    >
+                                </div>
+                                
+                                <!-- Date -->
+                                <div class="mt-2 text-xs text-gray-600 font-medium text-center">
+                                    {{ message.created_at|date:"M d, Y • H:i" }}
+                                </div>
+                            </div>
+
+                            <!-- Torn Paper Effect -->
+                            <div class="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-transparent via-yellow-200 to-transparent opacity-30"></div>
                         </div>
-                        {% endfor %}
                     </div>
+                    {% endfor %}
                 </div>
-            </div>
 
-            <!-- Decorative corners -->
-            <div class="absolute top-0 left-0 w-20 h-20 border-t-[10px] border-l-[10px] border-gray-200 rounded-tl-xl"></div>
-            <div class="absolute top-0 right-0 w-20 h-20 border-t-[10px] border-r-[10px] border-gray-200 rounded-tr-xl"></div>
-            <div class="absolute bottom-0 left-0 w-20 h-20 border-b-[10px] border-l-[10px] border-gray-200 rounded-bl-xl"></div>
-            <div class="absolute bottom-0 right-0 w-20 h-20 border-b-[10px] border-r-[10px] border-gray-200 rounded-br-xl"></div>
-
-            <!-- Export controls -->
-            <div id="exportControls" class="absolute top-4 right-4 z-50">
-                <div class="relative">
-                    <button 
-                        id="menuButton"
-                        class="p-3 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:rotate-90 group focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        aria-expanded="false"
-                        aria-haspopup="true"
-                        aria-controls="dropdownMenu"
-                    >
-                        <span class="sr-only">Open export menu</span>
-                        <svg class="w-5 h-5 text-gray-700 group-hover:text-blue-600" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                        </svg>
-                    </button>
-                    <div 
-                        id="dropdownMenu"
-                        class="hidden absolute right-0 mt-2 w-52 bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl border border-gray-100 overflow-hidden transform origin-top-right transition-all duration-200"
-                        role="menu"
-                        aria-orientation="vertical"
-                        aria-labelledby="menuButton"
-                    >
-                        <button id="downloadPNG" class="export-button w-full px-4 py-3.5 text-left hover:bg-blue-50 flex items-center space-x-3 text-sm group transition-all duration-200" role="menuitem">
-                            <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-100 group-hover:bg-blue-200 transition-colors duration-200">
-                                <svg class="w-4 h-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                                    <path d="M4 15v4c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2v-4M12 3v12m0 0l-4-4m4 4l4-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </span>
-                            <div class="flex flex-col">
-                                <span class="text-gray-700 font-medium group-hover:text-gray-900">Save as PNG</span>
-                            </div>
+                <!-- Export Controls -->
+                <div id="exportControls" class="absolute top-6 right-6 z-50">
+                    <div class="relative">
+                        <button
+                            id="menuButton"
+                            class="p-4 rounded-full bg-white/95 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 hover:rotate-12 group border-2 border-amber-200 hover:border-amber-300"
+                            aria-expanded="false"
+                            aria-haspopup="true"
+                            aria-controls="dropdownMenu"
+                        >
+                            <span class="sr-only">Open export menu</span>
+                            <svg class="w-6 h-6 text-gray-700 group-hover:text-amber-600 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                            </svg>
                         </button>
                         
-                        <button id="downloadPDF" class="export-button w-full px-4 py-3.5 text-left hover:bg-red-50 flex items-center space-x-3 text-sm group transition-all duration-200 border-t border-gray-100" role="menuitem">
-                            <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-red-100 group-hover:bg-red-200 transition-colors duration-200">
-                                <svg class="w-4 h-4 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                                    <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 15h16v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </span>
-                            <div class="flex flex-col">
-                                <span class="text-gray-700 font-medium group-hover:text-gray-900">Save as PDF</span>
-                            </div>
-                        </button>
+                        <div
+                            id="dropdownMenu"
+                            class="hidden absolute right-0 mt-3 w-56 bg-white/98 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-amber-100 overflow-hidden transform origin-top-right transition-all duration-300"
+                            role="menu"
+                            aria-orientation="vertical"
+                            aria-labelledby="menuButton"
+                        >
+                            <button id="downloadPNG" class="export-button w-full px-5 py-4 text-left hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 flex items-center space-x-4 group transition-all duration-300 border-b border-gray-100" role="menuitem">
+                                <span class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 group-hover:from-blue-600 group-hover:to-purple-700 transition-all duration-300 shadow-lg">
+                                    <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M4 15v4c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2v-4M12 3v12m0 0l-4-4m4 4l4-4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                                <div class="flex flex-col">
+                                    <span class="text-gray-800 font-semibold group-hover:text-gray-900">Download PNG</span>
+                                    <span class="text-gray-500 text-sm group-hover:text-gray-600">High quality image</span>
+                                </div>
+                            </button>
+                           
+                            <button id="downloadPDF" class="export-button w-full px-5 py-4 text-left hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 flex items-center space-x-4 group transition-all duration-300" role="menuitem">
+                                <span class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 group-hover:from-red-600 group-hover:to-pink-700 transition-all duration-300 shadow-lg">
+                                    <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 15h16v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4z" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                                <div class="flex flex-col">
+                                    <span class="text-gray-800 font-semibold group-hover:text-gray-900">Download PDF</span>
+                                    <span class="text-gray-500 text-sm group-hover:text-gray-600">Print ready format</span>
+                                </div>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -97,11 +125,16 @@
     </div>
 </div>
 
-<!-- Loading indicator -->
-<div id="loadingOverlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300">
-    <div class="flex flex-col items-center space-y-4">
-        <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-        <p class="text-gray-600 font-medium">Processing your download...</p>
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="fixed inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="flex flex-col items-center space-y-6">
+        <div class="w-16 h-16 border-4 border-amber-200 border-t-amber-500 rounded-full animate-spin"></div>
+        <p class="text-gray-700 font-semibold text-lg">Creating your download...</p>
+        <div class="flex space-x-2">
+            <div class="w-2 h-2 bg-amber-400 rounded-full animate-bounce"></div>
+            <div class="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+            <div class="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -109,17 +142,11 @@
 {% block scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Auto-reload the page every 5 minutes (300,000 milliseconds)
-        const reloadInterval = 5 * 60 * 1000; // 5 minutes in milliseconds
-        setInterval(() => {
-            console.log('Reloading page...');
-            location.reload();
-        }, reloadInterval);
-    
+        // Auto-reload every 5 minutes
+        setInterval(() => location.reload(), 300000);
+   
         // DOM Elements
         const menuButton = document.getElementById('menuButton');
         const dropdownMenu = document.getElementById('dropdownMenu');
@@ -129,246 +156,298 @@
         const container = document.getElementById('messagesContainer');
         const messages = Array.from(container.querySelectorAll('.message-item'));
         const exportControls = document.getElementById('exportControls');
-    
-        // Menu functionality
-        menuButton.addEventListener('click', () => {
-            toggleDropdown();
+        const loadingOverlay = document.getElementById('loadingOverlay');
+   
+        // Sticky note color variations
+        const stickyColors = [
+            'from-yellow-200 via-yellow-100 to-amber-100',
+            'from-pink-200 via-pink-100 to-rose-100',
+            'from-blue-200 via-blue-100 to-cyan-100',
+            'from-green-200 via-green-100 to-emerald-100',
+            'from-purple-200 via-purple-100 to-violet-100',
+            'from-orange-200 via-orange-100 to-amber-100'
+        ];
+
+        // Apply random colors to sticky notes
+        messages.forEach((msg, index) => {
+            const stickyNote = msg.querySelector('.sticky-note');
+            const colorClass = stickyColors[index % stickyColors.length];
+            stickyNote.className = stickyNote.className.replace(/from-yellow-200.*?to-amber-100/, colorClass);
         });
-    
+   
+        // Menu functionality
+        menuButton.addEventListener('click', () => toggleDropdown());
+   
         function toggleDropdown() {
-            dropdownMenu.classList.toggle('hidden');
-            dropdownMenu.classList.toggle('scale-95');
-            dropdownMenu.classList.toggle('opacity-0');
-    
-            if (!dropdownMenu.classList.contains('hidden')) {
+            const isHidden = dropdownMenu.classList.contains('hidden');
+            if (isHidden) {
+                dropdownMenu.classList.remove('hidden');
                 setTimeout(() => {
-                    dropdownMenu.classList.remove('scale-95', 'opacity-0');
                     dropdownMenu.classList.add('scale-100', 'opacity-100');
-                }, 0);
+                    dropdownMenu.classList.remove('scale-95', 'opacity-0');
+                }, 10);
+            } else {
+                closeDropdown();
             }
         }
-    
+   
+        function closeDropdown() {
+            dropdownMenu.classList.add('scale-95', 'opacity-0');
+            dropdownMenu.classList.remove('scale-100', 'opacity-100');
+            setTimeout(() => {
+                dropdownMenu.classList.add('hidden');
+            }, 200);
+        }
+   
         // Close dropdown when clicking outside
         document.addEventListener('click', (event) => {
             if (!menuButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
                 closeDropdown();
             }
         });
-    
-        function closeDropdown() {
-            dropdownMenu.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                dropdownMenu.classList.add('hidden');
-            }, 200);
-        }
-    
-        // Grid layout functions
-        function createGridLayout() {
-            const containerWidth = container.clientWidth;
-            const containerHeight = container.clientHeight;
-            const padding = 40;
-            const minSpacing = 20; // Minimum space between items
-    
-            const availableWidth = containerWidth - (padding * 2);
-            const availableHeight = containerHeight - (padding * 2);
-    
-            // Calculate optimal grid size based on number of messages
-            const totalMessages = messages.length;
-            const aspectRatio = availableWidth / availableHeight;
-            let cols = Math.ceil(Math.sqrt(totalMessages * aspectRatio));
-            let rows = Math.ceil(totalMessages / cols);
-    
-            // Adjust if we have too few items for the calculated grid
-            if (cols * rows > totalMessages * 2) {
-                cols = Math.ceil(Math.sqrt(totalMessages));
-                rows = Math.ceil(totalMessages / cols);
-            }
-    
-            const cellWidth = availableWidth / cols;
-            const cellHeight = availableHeight / rows;
-            const messageSize = Math.min(cellWidth, cellHeight) - minSpacing;
-    
-            const positions = [];
-            for (let row = 0; row < rows; row++) {
-                for (let col = 0; col < cols; col++) {
-                    positions.push({
-                        x: padding + (col * cellWidth) + (cellWidth - messageSize) / 2,
-                        y: padding + (row * cellHeight) + (cellHeight - messageSize) / 2,
-                        width: messageSize,
-                        height: messageSize
-                    });
-                }
-            }
-    
-            return positions;
-        }
-    
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-        }
-    
-        function positionMessages() {
-            // Reset all messages
-            messages.forEach(msg => {
-                msg.style.opacity = '0';
-                msg.style.transform = 'none';
+   
+        // Advanced grid layout with masonry-like positioning
+        function createOptimizedLayout() {
+            const containerRect = container.getBoundingClientRect();
+            const padding = 20;
+            const minCardSize = 200;
+            const maxCardSize = 280;
+            const spacing = 25;
+   
+            const availableWidth = containerRect.width - (padding * 2);
+            const availableHeight = containerRect.height - (padding * 2);
+   
+            // Calculate optimal columns
+            const cols = Math.floor(availableWidth / (minCardSize + spacing));
+            const colWidth = (availableWidth - (spacing * (cols - 1))) / cols;
+            const cardSize = Math.min(Math.max(colWidth, minCardSize), maxCardSize);
+   
+            // Column heights tracker for masonry layout
+            const columnHeights = new Array(cols).fill(padding);
+   
+            return messages.map((msg, index) => {
+                // Find shortest column
+                const shortestCol = columnHeights.indexOf(Math.min(...columnHeights));
+                
+                const x = padding + (shortestCol * (cardSize + spacing));
+                const y = columnHeights[shortestCol];
+                
+                // Update column height (assuming card height + spacing)
+                columnHeights[shortestCol] += cardSize + spacing;
+                
+                return {
+                    x,
+                    y,
+                    width: cardSize,
+                    height: cardSize,
+                    rotation: (Math.random() - 0.5) * 8, // -4 to 4 degrees
+                    scale: 0.95 + Math.random() * 0.1 // 0.95 to 1.05
+                };
             });
-    
-            const positions = createGridLayout();
-            const shuffledPositions = shuffleArray([...positions]);
-            const usablePositions = shuffledPositions.slice(0, messages.length);
-    
+        }
+   
+        function positionMessages() {
+            const positions = createOptimizedLayout();
+            
             messages.forEach((msg, index) => {
-                if (index < usablePositions.length) {
-                    const pos = usablePositions[index];
-                    const randomRotation = Math.random() * 20 - 10; // Random rotation between -10 and 10 degrees
-                    const randomScale = 0.9 + Math.random() * 0.2; // Random scale between 0.9 and 1.1
-    
+                if (index < positions.length) {
+                    const pos = positions[index];
+                    
+                    // Reset and apply positioning
+                    msg.style.opacity = '0';
                     msg.style.width = `${pos.width}px`;
-                    msg.style.maxWidth = `${pos.width}px`;
-                    msg.style.transform = `translate(${pos.x}px, ${pos.y}px) rotate(${randomRotation}deg) scale(${randomScale})`;
-    
-                    // Staggered animation
+                    msg.style.height = `${pos.height}px`;
+                    msg.style.transform = `translate(${pos.x}px, ${pos.y}px) rotate(${pos.rotation}deg) scale(${pos.scale})`;
+                    
+                    // Staggered fade-in animation
                     setTimeout(() => {
                         msg.style.opacity = '1';
-                    }, index * 50);
+                    }, index * 100);
                 }
             });
         }
-    
-        // Export preparation and cleanup
+   
+        // Enhanced export functions
+        function showLoading() {
+            loadingOverlay.style.opacity = '1';
+            loadingOverlay.style.pointerEvents = 'auto';
+        }
+        
+        function hideLoading() {
+            loadingOverlay.style.opacity = '0';
+            loadingOverlay.style.pointerEvents = 'none';
+        }
+        
         async function prepareForCapture() {
             exportControls.style.display = 'none';
-            // Wait for any transitions to complete
-            return new Promise(resolve => setTimeout(resolve, 150));
+            // Remove hover effects temporarily
+            messages.forEach(msg => {
+                msg.style.pointerEvents = 'none';
+                msg.classList.remove('hover:scale-110', 'hover:rotate-1');
+            });
+            await new Promise(resolve => setTimeout(resolve, 200));
         }
-    
+   
         async function restoreAfterCapture() {
             exportControls.style.display = 'block';
+            messages.forEach(msg => {
+                msg.style.pointerEvents = 'auto';
+                msg.classList.add('hover:scale-110', 'hover:rotate-1');
+            });
         }
-    
-        // Button state management
-        function updateButtonState(button, isLoading) {
-            const originalContent = button.innerHTML;
-            if (isLoading) {
-                button.disabled = true;
-                const loadingContent = `
-                    <div class="flex items-center space-x-3">
-                        <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100">
-                            <svg class="w-4 h-4 animate-spin text-gray-600" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                            </svg>
-                        </span>
-                        <div class="flex flex-col">
-                            <span class="text-gray-600 font-medium">Processing...</span>
-                        </div>
-                    </div>
-                `;
-                button.innerHTML = loadingContent;
-            } else {
-                button.disabled = false;
-                button.innerHTML = originalContent;
-            }
-        }
-    
-        // Image generation
-        async function generateImage() {
+   
+        async function generateHighQualityImage() {
             await prepareForCapture();
+            showLoading();
+            
             try {
                 const canvas = await html2canvas(board, {
-                    scale: 6, // Increased scale for higher resolution
+                    scale: 3, // High DPI
                     backgroundColor: '#FFFFFF',
                     logging: false,
                     allowTaint: true,
                     useCORS: true,
+                    width: board.scrollWidth,
+                    height: board.scrollHeight,
                     onclone: function(clonedDoc) {
-                        // Additional cleanup of cloned element if needed
                         const clonedBoard = clonedDoc.getElementById('messageBoard');
-                        const controls = clonedBoard.querySelector('#exportControls');
+                        const controls = clonedBoard?.querySelector('#exportControls');
                         if (controls) controls.remove();
+                        
+                        // Ensure all elements are visible in clone
+                        const clonedMessages = clonedBoard?.querySelectorAll('.message-item');
+                        clonedMessages?.forEach(msg => {
+                            msg.style.opacity = '1';
+                            msg.style.pointerEvents = 'none';
+                        });
                     }
                 });
                 return canvas;
+            } catch (error) {
+                console.error('Canvas generation error:', error);
+                throw error;
             } finally {
+                hideLoading();
                 await restoreAfterCapture();
             }
         }
-    
-        // Download handlers
+   
+        // Download handlers with improved error handling
         downloadPNG.addEventListener('click', async () => {
-            updateButtonState(downloadPNG, true);
             try {
-                const canvas = await generateImage();
+                const canvas = await generateHighQualityImage();
                 const link = document.createElement('a');
-                link.download = `guestbook-memories-${new Date().toISOString().split('T')[0]}.png`;
-                link.href = canvas.toDataURL('image/png', 1.0); // Highest quality PNG
+                const timestamp = new Date().toISOString().split('T')[0];
+                link.download = `guestbook-memories-${timestamp}.png`;
+                link.href = canvas.toDataURL('image/png', 1.0);
+                document.body.appendChild(link);
                 link.click();
+                document.body.removeChild(link);
+                
+                // Show success feedback
+                showNotification('PNG downloaded successfully!', 'success');
             } catch (error) {
-                console.error('Error generating PNG:', error);
-                alert('Failed to generate PNG. Please try again.');
-            } finally {
-                updateButtonState(downloadPNG, false);
-                closeDropdown();
+                console.error('PNG download error:', error);
+                showNotification('Failed to download PNG. Please try again.', 'error');
             }
+            closeDropdown();
         });
-    
+   
         downloadPDF.addEventListener('click', async () => {
-            updateButtonState(downloadPDF, true);
             try {
-                const canvas = await generateImage();
-                const imgData = canvas.toDataURL('image/png', 1.0); // Highest quality PNG
+                const canvas = await generateHighQualityImage();
+                const imgData = canvas.toDataURL('image/png', 1.0);
                 const { jsPDF } = window.jspdf;
-    
+   
+                // Calculate PDF dimensions to maintain aspect ratio
+                const imgWidth = canvas.width;
+                const imgHeight = canvas.height;
+                const ratio = imgHeight / imgWidth;
+                
+                const pdfWidth = 297; // A4 width in mm
+                const pdfHeight = pdfWidth * ratio;
+                
                 const pdf = new jsPDF({
-                    orientation: 'landscape',
-                    unit: 'px',
-                    format: [canvas.width, canvas.height],
-                    hotfixes: ['px_scaling'],
-                    compress: false // Disable compression for maximum quality
+                    orientation: pdfHeight > pdfWidth ? 'portrait' : 'landscape',
+                    unit: 'mm',
+                    format: [pdfWidth, pdfHeight]
                 });
-    
-                pdf.addImage(imgData, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
-                pdf.save(`guestbook-memories-${new Date().toISOString().split('T')[0]}.pdf`);
+   
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                const timestamp = new Date().toISOString().split('T')[0];
+                pdf.save(`guestbook-memories-${timestamp}.pdf`);
+                
+                showNotification('PDF downloaded successfully!', 'success');
             } catch (error) {
-                console.error('Error generating PDF:', error);
-                alert('Failed to generate PDF. Please try again.');
-            } finally {
-                updateButtonState(downloadPDF, false);
-                closeDropdown();
+                console.error('PDF download error:', error);
+                showNotification('Failed to download PDF. Please try again.', 'error');
             }
+            closeDropdown();
         });
-    
-        // Initial load handling
+        
+        // Notification system
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-6 right-6 z-50 p-4 rounded-xl shadow-2xl transform transition-all duration-300 translate-x-full ${
+                type === 'success' ? 'bg-green-500 text-white' : 
+                type === 'error' ? 'bg-red-500 text-white' : 
+                'bg-blue-500 text-white'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+   
+        // Initialize layout when images are loaded
         let loadedImages = 0;
-        messages.forEach(msg => {
-            const img = msg.querySelector('img');
-            if (img.complete) {
-                loadedImages++;
-                if (loadedImages === messages.length) {
-                    positionMessages();
-                }
-            } else {
-                img.onload = () => {
+        const totalImages = messages.length;
+        
+        if (totalImages === 0) {
+            // No messages to display
+            container.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-gray-500 text-xl">No messages yet</div>';
+        } else {
+            messages.forEach((msg) => {
+                const img = msg.querySelector('img');
+                if (img.complete) {
                     loadedImages++;
-                    if (loadedImages === messages.length) {
+                    if (loadedImages === totalImages) {
                         positionMessages();
                     }
-                };
-            }
-        });
-    
-        // Resize handling with debounce
+                } else {
+                    img.onload = () => {
+                        loadedImages++;
+                        if (loadedImages === totalImages) {
+                            positionMessages();
+                        }
+                    };
+                    img.onerror = () => {
+                        loadedImages++;
+                        if (loadedImages === totalImages) {
+                            positionMessages();
+                        }
+                    };
+                }
+            });
+        }
+   
+        // Responsive resize handling
         let resizeTimeout;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
                 positionMessages();
-            }, 250);
+            }, 300);
         });
     });
 </script>

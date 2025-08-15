@@ -134,7 +134,7 @@
                     <div class="pt-6 mt-6 border-t border-gray-200 dark:border-gray-700 
                     text-sm text-gray-600 dark:text-gray-400
                     flex justify-between items-center">
-            <a href="{% url 'guestbook:message' event.id %}" class="flex items-center gap-2 hover:text-blue-500 transition-colors duration-200 ease-in-out
+            <a href="{% url 'guestbook:write_message' event.id %}" class="flex items-center gap-2 hover:text-blue-500 transition-colors duration-200 ease-in-out
                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" aria-label="Write a message">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -142,16 +142,7 @@
                 </svg>
                 <span class="hover:underline">Write</span>
             </a>
-            <a href="{% url 'guestbook:dynamic' event.id %}" class="flex items-center gap-2 hover:text-blue-500 transition-colors duration-200 ease-in-out
-                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" aria-label="View messages">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-                <span class="hover:underline">View</span>
-            </a>
+
             <a href="{% url 'guestbook:messages_display' event.id %}" 
                class="flex items-center gap-2 hover:text-blue-500 
                       transition-colors duration-200 ease-in-out
@@ -163,7 +154,7 @@
             </svg>
                 <span class="hover:underline">Display</span>
             </a>
-            <a href="{% url 'guestbook:messages' event.id %}" 
+            <a href="{% url 'guestbook:download_messages' event.id %}" 
                class="flex items-center gap-2 hover:text-blue-500 
                       transition-colors duration-200 ease-in-out
                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" 
