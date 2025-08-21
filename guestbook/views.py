@@ -15,7 +15,8 @@ from django.utils import timezone
 import base64
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-
+from django.core import serializers
+import json
 from guestbook.forms import GuestbookEntryForm
 
 from .models import GuestbookEntry, Event
@@ -252,6 +253,8 @@ class MessagesView(View):
 #     }
 #     return render(request, 'guestbook/dynamic.html', context)
 
+
+
 @method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
 class MessageDisplayView(TemplateView):
     template_name = 'guestbook/messages_template.html'
@@ -267,9 +270,20 @@ class MessageDisplayView(TemplateView):
         messages = GuestbookEntry.objects.filter(event=event) if event else GuestbookEntry.objects.all()
         messages = messages.order_by('-created_at')
         
+        # Serialize messages to JSON
+        messages_data = []
+        for message in messages:
+            messages_data.append({
+                'id': message.id,
+                'name': message.name,
+                'signature_base64': message.signature_base64,
+                'created_at': message.created_at.isoformat(),
+            })
+        
         # Add to context
         context.update({
-            'messages': messages,
+            'messages_json': json.dumps(messages_data),  # Serialized JSON
+            'messages': messages,  # Original queryset (if needed elsewhere)
             'event': event,
             'ws_protocol': 'wss' if self.request.is_secure() else 'ws',
             'host': self.request.get_host(),
