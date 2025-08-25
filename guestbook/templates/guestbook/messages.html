@@ -1,454 +1,865 @@
 {% extends 'guestbook/base.html' %}
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
-    <div class="container mx-auto px-2 py-4">
-        <div class="max-w-full mx-auto">
-            <!-- Header -->
-            <div class="text-center mb-6">
-                <h1 class="text-4xl font-bold text-gray-800 mb-2">Guest Messages</h1>
-                <p class="text-gray-600">Beautiful memories from our special event</p>
+<div class="min-h-screen bg-gray-50">
+    <div class="container mx-auto px-4 py-6">
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Guest Signing Board</h1>
+            <p class="text-gray-600">Beautiful memories from our special event</p>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+            <div class="flex items-center space-x-4">
+                <label for="boardSize" class="text-sm font-medium text-gray-700">Board Size:</label>
+                <select id="boardSize" class="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="a4">A4 (8.5" x 11")</option>
+                    <option value="a3">A3 (11" x 17")</option>
+                    <option value="a2">A2 (16.5" x 23.4")</option>
+                    <option value="poster" selected>Large Poster (18" x 24")</option>
+                </select>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-2">
+                <button id="shuffleBtn" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                    Shuffle Layout
+                </button>
+                <button id="previewBtn" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
+                    Preview
+                </button>
+                <div class="relative">
+                    <button id="downloadBtn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-4-4m4 4l4-4m5.99-8.99A5 5 0 0119 4.37V4a2 2 0 00-2-2h-1.5a2 2 0 00-2 2v.37A5 5 0 0119 12.99V13a2 2 0 01-2 2h-1.5a2 2 0 01-2-2v-.01"></path>
+                        </svg>
+                        <span>Download</span>
+                    </button>
+                    <div id="downloadMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                        <button id="downloadPNG" class="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-t-md">
+                            Download as PNG
+                        </button>
+                        <button id="downloadPDF" class="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-b-md">
+                            Download as PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signing Board -->
+        <div id="signingBoard" class="bg-white shadow-lg border border-gray-200 mx-auto relative overflow-hidden" style="min-height: 800px;">
+            <!-- Board Header -->
+            <div class="text-center py-8 border-b border-gray-200 relative z-10">
+                <h2 class="text-4xl font-elegant text-gray-800 mb-2">{{ event.title|default:'Our Special Event' }}</h2>
+                <p class="text-lg text-gray-600">{{ event.date|default:'A Memorable Day' }}</p>
+                <div class="mt-4 text-sm text-gray-500">
+                    Please sign below and share your wishes
+                </div>
             </div>
 
-            <!-- Message Board Container -->
-            <div id="messageBoard" class="relative bg-white rounded-2xl shadow-2xl border-4 border-amber-200 min-h-[85vh] overflow-hidden">
-                <!-- Background Texture -->
-                <div class="absolute inset-0 opacity-5">
-                    <div class="w-full h-full" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'20\' height=\'20\' viewBox=\'0 0 20 20\'%3E%3Cg fill=\'%23000\' fill-opacity=\'0.1\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'0.5\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'0.5\'/%3E%3C/g%3E%3C/svg%3E');"></div>
-                </div>
-
-                {% if event.overlay_image %}
-                <img
-                    src="{{ event.overlay_image.url }}"
-                    alt="Background overlay"
-                    class="absolute inset-0 w-full h-full object-cover opacity-3 pointer-events-none"
-                    loading="lazy"
-                    decoding="async"
-                >
-                {% endif %}
-
-                <!-- Messages Container -->
-                <div id="messagesContainer" class="relative w-full h-full p-4">
-                    {% for message in messages %}
-                    <div
-                        class="message-item absolute transition-all duration-500 ease-out hover:z-50 hover:scale-110 hover:rotate-1 cursor-pointer opacity-0 will-change-transform group"
-                        data-index="{{ forloop.counter0 }}"
-                        data-name="{{ message.name|default:'Guest' }}"
-                        role="img"
-                        aria-label="Message from {{ message.name|default:'Guest' }}"
-                    >
-                        <!-- Sticky Note Card -->
-                        <div class="sticky-note bg-gradient-to-br from-yellow-200 via-yellow-100 to-amber-100 rounded-lg shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-yellow-300">
-                            <!-- Pin/Tape Effect -->
-                            <div class="absolute -top-2 -right-2 w-6 h-6 bg-red-400 rounded-full shadow-md transform rotate-12 group-hover:rotate-45 transition-transform duration-300"></div>
-                            
-                            <!-- Name Tag -->
-                            <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 py-1.5 rounded-t-lg text-sm font-semibold shadow-sm">
-                                <span class="text-white drop-shadow-sm">{{ message.name|default:'Anonymous Guest' }}</span>
-                            </div>
-                            
-                            <!-- Message Content -->
-                            <div class="p-3">
-                                <div class="message-content bg-white/70 rounded-md p-3 min-h-[120px] flex items-center justify-center">
-                                    <img
-                                        src="{{ message.signature_base64 }}"
-                                        alt="Message from {{ message.name|default:'Guest' }}"
-                                        class="w-full h-auto max-h-[100px] object-contain filter contrast-125 saturate-110"
-                                        loading="lazy"
-                                        decoding="async"
-                                    >
-                                </div>
-                                
-                                <!-- Date -->
-                                <div class="mt-2 text-xs text-gray-600 font-medium text-center">
-                                    {{ message.created_at|date:"M d, Y • H:i" }}
-                                </div>
-                            </div>
-
-                            <!-- Torn Paper Effect -->
-                            <div class="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-transparent via-yellow-200 to-transparent opacity-30"></div>
+            <!-- Messages Container -->
+            <div id="messagesContainer" class="relative w-full h-full" style="min-height: 600px;">
+                {% for message in messages %}
+                <div class="message-signature sticky-note" data-index="{{ forloop.counter0 }}" data-name="{{ message.name|default:'Guest' }}">
+                    <div class="sticky-note-inner">
+                        <!-- Signature Section -->
+                        <div class="signature-section">
+                            <img src="{{ message.signature_base64 }}" 
+                                 alt="Signature from {{ message.name|default:'Guest' }}" 
+                                 class="signature-img"
+                                 loading="lazy">
                         </div>
-                    </div>
-                    {% endfor %}
-                </div>
-
-                <!-- Export Controls -->
-                <div id="exportControls" class="absolute top-6 right-6 z-50">
-                    <div class="relative">
-                        <button
-                            id="menuButton"
-                            class="p-4 rounded-full bg-white/95 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 hover:rotate-12 group border-2 border-amber-200 hover:border-amber-300"
-                            aria-expanded="false"
-                            aria-haspopup="true"
-                            aria-controls="dropdownMenu"
-                        >
-                            <span class="sr-only">Open export menu</span>
-                            <svg class="w-6 h-6 text-gray-700 group-hover:text-amber-600 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                            </svg>
-                        </button>
                         
-                        <div
-                            id="dropdownMenu"
-                            class="hidden absolute right-0 mt-3 w-56 bg-white/98 backdrop-blur-md rounded-2xl shadow-2xl border-2 border-amber-100 overflow-hidden transform origin-top-right transition-all duration-300"
-                            role="menu"
-                            aria-orientation="vertical"
-                            aria-labelledby="menuButton"
-                        >
-                            <button id="downloadPNG" class="export-button w-full px-5 py-4 text-left hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 flex items-center space-x-4 group transition-all duration-300 border-b border-gray-100" role="menuitem">
-                                <span class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 group-hover:from-blue-600 group-hover:to-purple-700 transition-all duration-300 shadow-lg">
-                                    <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <path d="M4 15v4c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2v-4M12 3v12m0 0l-4-4m4 4l4-4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </span>
-                                <div class="flex flex-col">
-                                    <span class="text-gray-800 font-semibold group-hover:text-gray-900">Download PNG</span>
-                                    <span class="text-gray-500 text-sm group-hover:text-gray-600">High quality image</span>
-                                </div>
-                            </button>
-                           
-                            <button id="downloadPDF" class="export-button w-full px-5 py-4 text-left hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 flex items-center space-x-4 group transition-all duration-300" role="menuitem">
-                                <span class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 group-hover:from-red-600 group-hover:to-pink-700 transition-all duration-300 shadow-lg">
-                                    <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 15h16v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4z" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </span>
-                                <div class="flex flex-col">
-                                    <span class="text-gray-800 font-semibold group-hover:text-gray-900">Download PDF</span>
-                                    <span class="text-gray-500 text-sm group-hover:text-gray-600">Print ready format</span>
-                                </div>
-                            </button>
+                        <!-- Content Section -->
+                        <div class="content-section">
+                            <div class="guest-name">{{ message.name|default:'Anonymous Guest' }}</div>
+                            {% if message.message %}
+                            <div class="guest-message">{{ message.message }}</div>
+                            {% endif %}
+                            <div class="message-date">{{ message.created_at|date:"M d, Y" }}</div>
                         </div>
+                        
+                        <!-- Decorative tape -->
+                        <div class="tape-decoration"></div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
         </div>
     </div>
 </div>
 
 <!-- Loading Overlay -->
-<div id="loadingOverlay" class="fixed inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300">
-    <div class="flex flex-col items-center space-y-6">
-        <div class="w-16 h-16 border-4 border-amber-200 border-t-amber-500 rounded-full animate-spin"></div>
-        <p class="text-gray-700 font-semibold text-lg">Creating your download...</p>
-        <div class="flex space-x-2">
-            <div class="w-2 h-2 bg-amber-400 rounded-full animate-bounce"></div>
-            <div class="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
-            <div class="w-2 h-2 bg-amber-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-        </div>
+<div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 flex flex-col items-center space-y-4">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <p class="text-gray-700 font-medium">Preparing your download...</p>
     </div>
 </div>
+
+<!-- CSS Styles -->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Caveat:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
+
+.font-elegant {
+    font-family: 'Playfair Display', serif;
+}
+
+/* Board size configurations */
+.board-a4 {
+    width: 8.5in;
+    height: 11in;
+    max-width: 8.5in;
+}
+
+.board-a3 {
+    width: 11.7in;
+    height: 16.5in;
+    max-width: 11.7in;
+}
+
+.board-a2 {
+    width: 16.5in;
+    height: 23.4in;
+    max-width: 16.5in;
+}
+
+.board-poster {
+    width: 18in;
+    height: 24in;
+    max-width: 100%;
+}
+
+/* Sticky Note Styles */
+.sticky-note {
+    position: absolute;
+    width: 220px;
+    min-height: 160px;
+    cursor: pointer;
+    transition: transform 0.3s ease, z-index 0.1s;
+    z-index: 1;
+}
+
+.sticky-note:hover {
+    transform: scale(1.05) rotate(0deg) !important;
+    z-index: 10;
+}
+
+.sticky-note-inner {
+    width: 100%;
+    height: 100%;
+    padding: 16px;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 
+        0 4px 8px rgba(0, 0, 0, 0.1),
+        0 2px 4px rgba(0, 0, 0, 0.05);
+    position: relative;
+    font-family: 'Caveat', cursive;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Sticky note color variations */
+.sticky-note:nth-child(6n+1) .sticky-note-inner { background: linear-gradient(135deg, #fff59d, #fff176); } /* Yellow */
+.sticky-note:nth-child(6n+2) .sticky-note-inner { background: linear-gradient(135deg, #c8e6c9, #a5d6a7); } /* Green */
+.sticky-note:nth-child(6n+3) .sticky-note-inner { background: linear-gradient(135deg, #ffcdd2, #f8bbd9); } /* Pink */
+.sticky-note:nth-child(6n+4) .sticky-note-inner { background: linear-gradient(135deg, #bbdefb, #90caf9); } /* Blue */
+.sticky-note:nth-child(6n+5) .sticky-note-inner { background: linear-gradient(135deg, #f3e5f5, #e1bee7); } /* Purple */
+.sticky-note:nth-child(6n+6) .sticky-note-inner { background: linear-gradient(135deg, #ffe0b2, #ffcc80); } /* Orange */
+
+/* Tape decoration */
+.tape-decoration {
+    position: absolute;
+    top: -8px;
+    left: 20px;
+    width: 40px;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+    transform: rotate(-5deg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sticky-note:nth-child(even) .tape-decoration {
+    right: 20px;
+    left: auto;
+    transform: rotate(5deg);
+}
+
+/* Content styling */
+.signature-section {
+    margin-bottom: 12px;
+    text-align: center;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.signature-img {
+    max-width: 160px;
+    max-height: 60px;
+    object-fit: contain;
+    filter: contrast(1.1);
+}
+
+.content-section {
+    text-align: center;
+}
+
+.guest-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 8px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.guest-message {
+    font-size: 14px;
+    color: #4a5568;
+    margin-bottom: 8px;
+    line-height: 1.4;
+    max-height: 60px;
+    overflow: hidden;
+    font-weight: 500;
+}
+
+.message-date {
+    font-size: 11px;
+    color: #718096;
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+/* Print styles */
+@media print {
+    * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    
+    body * {
+        visibility: hidden;
+    }
+    
+    #signingBoard, #signingBoard * {
+        visibility: visible;
+    }
+    
+    #signingBoard {
+        position: absolute;
+        left: 0;
+        top: 0;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        overflow: visible !important;
+    }
+    
+    .sticky-note {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+    
+    .sticky-note:hover {
+        transform: none !important;
+    }
+    
+    /* Ensure colors print properly */
+    .sticky-note-inner {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .sticky-note {
+        width: 180px;
+        min-height: 140px;
+    }
+    
+    .sticky-note-inner {
+        padding: 12px;
+    }
+    
+    .guest-name {
+        font-size: 16px;
+    }
+    
+    .guest-message {
+        font-size: 13px;
+    }
+}
+
+/* Animation for shuffling */
+.shuffling {
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Empty state */
+.empty-state {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #9ca3af;
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+/* Fix for html2canvas rendering */
+.html2canvas-container { 
+    width: 3000px !important; 
+    height: 3000px !important; 
+}
+</style>
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Auto-reload every 5 minutes
-        setInterval(() => location.reload(), 300000);
-   
-        // DOM Elements
-        const menuButton = document.getElementById('menuButton');
-        const dropdownMenu = document.getElementById('dropdownMenu');
-        const downloadPNG = document.getElementById('downloadPNG');
-        const downloadPDF = document.getElementById('downloadPDF');
-        const board = document.getElementById('messageBoard');
-        const container = document.getElementById('messagesContainer');
-        const messages = Array.from(container.querySelectorAll('.message-item'));
-        const exportControls = document.getElementById('exportControls');
-        const loadingOverlay = document.getElementById('loadingOverlay');
-   
-        // Sticky note color variations
-        const stickyColors = [
-            'from-yellow-200 via-yellow-100 to-amber-100',
-            'from-pink-200 via-pink-100 to-rose-100',
-            'from-blue-200 via-blue-100 to-cyan-100',
-            'from-green-200 via-green-100 to-emerald-100',
-            'from-purple-200 via-purple-100 to-violet-100',
-            'from-orange-200 via-orange-100 to-amber-100'
-        ];
-
-        // Apply random colors to sticky notes
-        messages.forEach((msg, index) => {
-            const stickyNote = msg.querySelector('.sticky-note');
-            const colorClass = stickyColors[index % stickyColors.length];
-            stickyNote.className = stickyNote.className.replace(/from-yellow-200.*?to-amber-100/, colorClass);
-        });
-   
-        // Menu functionality
-        menuButton.addEventListener('click', () => toggleDropdown());
-   
-        function toggleDropdown() {
-            const isHidden = dropdownMenu.classList.contains('hidden');
-            if (isHidden) {
-                dropdownMenu.classList.remove('hidden');
-                setTimeout(() => {
-                    dropdownMenu.classList.add('scale-100', 'opacity-100');
-                    dropdownMenu.classList.remove('scale-95', 'opacity-0');
-                }, 10);
-            } else {
-                closeDropdown();
-            }
-        }
-   
-        function closeDropdown() {
-            dropdownMenu.classList.add('scale-95', 'opacity-0');
-            dropdownMenu.classList.remove('scale-100', 'opacity-100');
-            setTimeout(() => {
-                dropdownMenu.classList.add('hidden');
-            }, 200);
-        }
-   
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (event) => {
-            if (!menuButton.contains(event.target) && !dropdownMenu.contains(event.target)) {
-                closeDropdown();
-            }
-        });
-   
-        // Advanced grid layout with masonry-like positioning
-        function createOptimizedLayout() {
-            const containerRect = container.getBoundingClientRect();
-            const padding = 20;
-            const minCardSize = 200;
-            const maxCardSize = 280;
-            const spacing = 25;
-   
-            const availableWidth = containerRect.width - (padding * 2);
-            const availableHeight = containerRect.height - (padding * 2);
-   
-            // Calculate optimal columns
-            const cols = Math.floor(availableWidth / (minCardSize + spacing));
-            const colWidth = (availableWidth - (spacing * (cols - 1))) / cols;
-            const cardSize = Math.min(Math.max(colWidth, minCardSize), maxCardSize);
-   
-            // Column heights tracker for masonry layout
-            const columnHeights = new Array(cols).fill(padding);
-   
-            return messages.map((msg, index) => {
-                // Find shortest column
-                const shortestCol = columnHeights.indexOf(Math.min(...columnHeights));
-                
-                const x = padding + (shortestCol * (cardSize + spacing));
-                const y = columnHeights[shortestCol];
-                
-                // Update column height (assuming card height + spacing)
-                columnHeights[shortestCol] += cardSize + spacing;
-                
-                return {
-                    x,
-                    y,
-                    width: cardSize,
-                    height: cardSize,
-                    rotation: (Math.random() - 0.5) * 8, // -4 to 4 degrees
-                    scale: 0.95 + Math.random() * 0.1 // 0.95 to 1.05
-                };
-            });
-        }
-   
-        function positionMessages() {
-            const positions = createOptimizedLayout();
-            
-            messages.forEach((msg, index) => {
-                if (index < positions.length) {
-                    const pos = positions[index];
-                    
-                    // Reset and apply positioning
-                    msg.style.opacity = '0';
-                    msg.style.width = `${pos.width}px`;
-                    msg.style.height = `${pos.height}px`;
-                    msg.style.transform = `translate(${pos.x}px, ${pos.y}px) rotate(${pos.rotation}deg) scale(${pos.scale})`;
-                    
-                    // Staggered fade-in animation
-                    setTimeout(() => {
-                        msg.style.opacity = '1';
-                    }, index * 100);
-                }
-            });
-        }
-   
-        // Enhanced export functions
-        function showLoading() {
-            loadingOverlay.style.opacity = '1';
-            loadingOverlay.style.pointerEvents = 'auto';
-        }
+// Wait for all resources to load
+$(window).on('load', function() {
+    // Initialize the application
+    const $board = $('#signingBoard');
+    const $messagesContainer = $('#messagesContainer');
+    const $boardSize = $('#boardSize');
+    const $downloadBtn = $('#downloadBtn');
+    const $downloadMenu = $('#downloadMenu');
+    const $loadingOverlay = $('#loadingOverlay');
+    const $shuffleBtn = $('#shuffleBtn');
+    
+    // Board size configurations
+    const boardSizes = {
+        a4: { width: '8.5in', height: '11in', className: 'board-a4' },
+        a3: { width: '11.7in', height: '16.5in', className: 'board-a3' },
+        a2: { width: '16.5in', height: '23.4in', className: 'board-a2' },
+        poster: { width: '18in', height: '24in', className: 'board-poster' }
+    };
+    
+    // Check if two notes overlap
+    function hasOverlap(pos1, existingPositions, noteWidth, noteHeight) {
+        const overlapThreshold = 40; // Minimum clear space between notes
         
-        function hideLoading() {
-            loadingOverlay.style.opacity = '0';
-            loadingOverlay.style.pointerEvents = 'none';
-        }
-        
-        async function prepareForCapture() {
-            exportControls.style.display = 'none';
-            // Remove hover effects temporarily
-            messages.forEach(msg => {
-                msg.style.pointerEvents = 'none';
-                msg.classList.remove('hover:scale-110', 'hover:rotate-1');
-            });
-            await new Promise(resolve => setTimeout(resolve, 200));
-        }
-   
-        async function restoreAfterCapture() {
-            exportControls.style.display = 'block';
-            messages.forEach(msg => {
-                msg.style.pointerEvents = 'auto';
-                msg.classList.add('hover:scale-110', 'hover:rotate-1');
-            });
-        }
-   
-        async function generateHighQualityImage() {
-            await prepareForCapture();
-            showLoading();
-            
-            try {
-                const canvas = await html2canvas(board, {
-                    scale: 3, // High DPI
-                    backgroundColor: '#FFFFFF',
-                    logging: false,
-                    allowTaint: true,
-                    useCORS: true,
-                    width: board.scrollWidth,
-                    height: board.scrollHeight,
-                    onclone: function(clonedDoc) {
-                        const clonedBoard = clonedDoc.getElementById('messageBoard');
-                        const controls = clonedBoard?.querySelector('#exportControls');
-                        if (controls) controls.remove();
-                        
-                        // Ensure all elements are visible in clone
-                        const clonedMessages = clonedBoard?.querySelectorAll('.message-item');
-                        clonedMessages?.forEach(msg => {
-                            msg.style.opacity = '1';
-                            msg.style.pointerEvents = 'none';
-                        });
-                    }
-                });
-                return canvas;
-            } catch (error) {
-                console.error('Canvas generation error:', error);
-                throw error;
-            } finally {
-                hideLoading();
-                await restoreAfterCapture();
-            }
-        }
-   
-        // Download handlers with improved error handling
-        downloadPNG.addEventListener('click', async () => {
-            try {
-                const canvas = await generateHighQualityImage();
-                const link = document.createElement('a');
-                const timestamp = new Date().toISOString().split('T')[0];
-                link.download = `guestbook-memories-${timestamp}.png`;
-                link.href = canvas.toDataURL('image/png', 1.0);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                // Show success feedback
-                showNotification('PNG downloaded successfully!', 'success');
-            } catch (error) {
-                console.error('PNG download error:', error);
-                showNotification('Failed to download PNG. Please try again.', 'error');
-            }
-            closeDropdown();
+        return existingPositions.some(pos2 => {
+            const xOverlap = Math.abs(pos1.x - pos2.x) < (noteWidth - overlapThreshold);
+            const yOverlap = Math.abs(pos1.y - pos2.y) < (noteHeight - overlapThreshold);
+            return xOverlap && yOverlap;
         });
-   
-        downloadPDF.addEventListener('click', async () => {
-            try {
-                const canvas = await generateHighQualityImage();
-                const imgData = canvas.toDataURL('image/png', 1.0);
-                const { jsPDF } = window.jspdf;
-   
-                // Calculate PDF dimensions to maintain aspect ratio
-                const imgWidth = canvas.width;
-                const imgHeight = canvas.height;
-                const ratio = imgHeight / imgWidth;
-                
-                const pdfWidth = 297; // A4 width in mm
-                const pdfHeight = pdfWidth * ratio;
-                
-                const pdf = new jsPDF({
-                    orientation: pdfHeight > pdfWidth ? 'portrait' : 'landscape',
-                    unit: 'mm',
-                    format: [pdfWidth, pdfHeight]
-                });
-   
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                const timestamp = new Date().toISOString().split('T')[0];
-                pdf.save(`guestbook-memories-${timestamp}.pdf`);
-                
-                showNotification('PDF downloaded successfully!', 'success');
-            } catch (error) {
-                console.error('PDF download error:', error);
-                showNotification('Failed to download PDF. Please try again.', 'error');
-            }
-            closeDropdown();
-        });
+    }
+    
+    // Improved positioning function that avoids overlap and uses space efficiently
+    function getRandomPosition(containerWidth, containerHeight, noteWidth, noteHeight, index, totalNotes, existingPositions = []) {
+        const headerHeight = 140; // Account for board header
+        const availableHeight = containerHeight - headerHeight - 40; // Leave some bottom margin
+        const availableWidth = containerWidth - 40; // Leave side margins
         
-        // Notification system
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `fixed top-6 right-6 z-50 p-4 rounded-xl shadow-2xl transform transition-all duration-300 translate-x-full ${
-                type === 'success' ? 'bg-green-500 text-white' : 
-                type === 'error' ? 'bg-red-500 text-white' : 
-                'bg-blue-500 text-white'
-            }`;
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.classList.remove('translate-x-full');
-            }, 100);
-            
-            setTimeout(() => {
-                notification.classList.add('translate-x-full');
-                setTimeout(() => {
-                    document.body.removeChild(notification);
-                }, 300);
-            }, 3000);
-        }
-   
-        // Initialize layout when images are loaded
-        let loadedImages = 0;
-        const totalImages = messages.length;
+        const padding = 20; // Minimum space between notes
+        const effectiveNoteWidth = noteWidth + padding;
+        const effectiveNoteHeight = noteHeight + padding;
         
-        if (totalImages === 0) {
-            // No messages to display
-            container.innerHTML = '<div class="absolute inset-0 flex items-center justify-center text-gray-500 text-xl">No messages yet</div>';
+        // Calculate optimal grid dimensions based on available space and note count
+        const maxCols = Math.floor(availableWidth / effectiveNoteWidth);
+        const maxRows = Math.floor(availableHeight / effectiveNoteHeight);
+        
+        // Determine actual grid size based on message count
+        let cols, rows;
+        if (totalNotes <= 4) {
+            // For few messages, use a more compact layout
+            cols = Math.min(2, totalNotes);
+            rows = Math.ceil(totalNotes / cols);
+        } else if (totalNotes <= maxCols * maxRows) {
+            // Normal case - fit everything in optimal grid
+            cols = Math.min(maxCols, Math.ceil(Math.sqrt(totalNotes * 1.2)));
+            rows = Math.ceil(totalNotes / cols);
         } else {
-            messages.forEach((msg) => {
-                const img = msg.querySelector('img');
-                if (img.complete) {
-                    loadedImages++;
-                    if (loadedImages === totalImages) {
-                        positionMessages();
-                    }
+            // Too many messages - use maximum grid size
+            cols = maxCols;
+            rows = maxRows;
+        }
+        
+        // Calculate grid position
+        const gridCol = index % cols;
+        const gridRow = Math.floor(index / cols);
+        
+        // Calculate cell size
+        const cellWidth = availableWidth / cols;
+        const cellHeight = availableHeight / rows;
+        
+        // Base position in grid cell center
+        const baseX = (gridCol * cellWidth) + (cellWidth / 2) - (noteWidth / 2) + 20;
+        const baseY = (gridRow * cellHeight) + (cellHeight / 2) - (noteHeight / 2) + headerHeight;
+        
+        // Add controlled randomization to avoid perfect grid appearance
+        const maxRandomOffset = Math.min(cellWidth * 0.2, cellHeight * 0.2, 30);
+        const randomOffsetX = (Math.random() - 0.5) * maxRandomOffset;
+        const randomOffsetY = (Math.random() - 0.5) * maxRandomOffset;
+        
+        // Ensure position stays within bounds
+        const x = Math.max(20, Math.min(containerWidth - noteWidth - 20, baseX + randomOffsetX));
+        const y = Math.max(headerHeight, Math.min(containerHeight - noteHeight - 20, baseY + randomOffsetY));
+        
+        // Check for overlap with existing positions (collision detection)
+        const newPosition = { x, y };
+        let attempts = 0;
+        const maxAttempts = 50;
+        
+        while (attempts < maxAttempts && hasOverlap(newPosition, existingPositions, noteWidth, noteHeight)) {
+            // Try a new random position within the cell
+            const randomX = (gridCol * cellWidth) + Math.random() * (cellWidth - noteWidth) + 20;
+            const randomY = (gridRow * cellHeight) + Math.random() * (cellHeight - noteHeight) + headerHeight;
+            
+            newPosition.x = Math.max(20, Math.min(containerWidth - noteWidth - 20, randomX));
+            newPosition.y = Math.max(headerHeight, Math.min(containerHeight - noteHeight - 20, randomY));
+            
+            attempts++;
+        }
+        
+        return newPosition;
+    }
+    
+    // Random rotation function
+    function getRandomRotation() {
+        return (Math.random() - 0.5) * 12; // -6 to +6 degrees
+    }
+    
+    // Alternative compact layout for few messages
+    function positionNotesCompact() {
+        const $notes = $('.sticky-note');
+        if ($notes.length === 0) return;
+        
+        const containerWidth = $messagesContainer.width();
+        const containerHeight = Math.max($messagesContainer.height(), 600);
+        const noteWidth = 220;
+        const noteHeight = 160;
+        const headerHeight = 140;
+        
+        // For very few messages, use a more artistic, centered approach
+        if ($notes.length <= 3) {
+            const centerX = containerWidth / 2;
+            const centerY = (containerHeight + headerHeight) / 2;
+            const radius = Math.min(containerWidth, containerHeight) * 0.15;
+            
+            $notes.each(function(index) {
+                const $note = $(this);
+                let x, y;
+                
+                if ($notes.length === 1) {
+                    x = centerX - noteWidth / 2;
+                    y = centerY - noteHeight / 2;
                 } else {
-                    img.onload = () => {
-                        loadedImages++;
-                        if (loadedImages === totalImages) {
-                            positionMessages();
-                        }
-                    };
-                    img.onerror = () => {
-                        loadedImages++;
-                        if (loadedImages === totalImages) {
-                            positionMessages();
-                        }
-                    };
+                    const angle = (index * 2 * Math.PI) / $notes.length;
+                    x = centerX + Math.cos(angle) * radius - noteWidth / 2;
+                    y = centerY + Math.sin(angle) * radius - noteHeight / 2;
+                }
+                
+                // Add slight randomization
+                x += (Math.random() - 0.5) * 40;
+                y += (Math.random() - 0.5) * 40;
+                
+                // Ensure bounds
+                x = Math.max(20, Math.min(containerWidth - noteWidth - 20, x));
+                y = Math.max(headerHeight, Math.min(containerHeight - noteHeight - 20, y));
+                
+                const rotation = getRandomRotation();
+                
+                $note.css({
+                    'left': x + 'px',
+                    'top': y + 'px',
+                    'transform': `rotate(${rotation}deg)`,
+                    'z-index': index + 1
+                });
+            });
+        } else {
+            // Use the improved random positioning for 4+ messages
+            positionNotesRandomly(false);
+        }
+    }
+    
+    // Improved positioning function with collision detection
+    function positionNotesRandomly(animate = false) {
+        const $notes = $('.sticky-note');
+        if ($notes.length === 0) return;
+        
+        const containerWidth = $messagesContainer.width();
+        const containerHeight = Math.max($messagesContainer.height(), 800);
+        const noteWidth = 220;
+        const noteHeight = 160;
+        
+        if (animate) {
+            $notes.addClass('shuffling');
+        }
+        
+        const existingPositions = [];
+        
+        $notes.each(function(index) {
+            const $note = $(this);
+            const position = getRandomPosition(
+                containerWidth, 
+                containerHeight, 
+                noteWidth, 
+                noteHeight, 
+                index, 
+                $notes.length,
+                existingPositions
+            );
+            const rotation = getRandomRotation();
+            
+            // Store position for collision detection
+            existingPositions.push(position);
+            
+            $note.css({
+                'left': position.x + 'px',
+                'top': position.y + 'px',
+                'transform': `rotate(${rotation}deg)`,
+                'z-index': Math.floor(Math.random() * 5) + 1 // Vary z-index for natural layering
+            });
+        });
+        
+        if (animate) {
+            setTimeout(() => {
+                $notes.removeClass('shuffling');
+            }, 800);
+        }
+    }
+    
+    // Update board layout
+    function updateBoardLayout() {
+        const selectedSize = $boardSize.val();
+        const config = boardSizes[selectedSize];
+        
+        // Remove all board size classes
+        Object.values(boardSizes).forEach(size => {
+            $board.removeClass(size.className);
+        });
+        
+        // Apply new size class
+        $board.addClass(config.className);
+        $board.css({
+            'width': config.width,
+            'height': config.height
+        });
+        
+        // Update container height
+        const headerHeight = 120;
+        const boardHeight = $board.height();
+        $messagesContainer.css('min-height', (boardHeight - headerHeight) + 'px');
+        
+        // Reposition notes after size change
+        setTimeout(() => {
+            const messageCount = $('.sticky-note').length;
+            if (messageCount <= 3) {
+                positionNotesCompact();
+            } else {
+                positionNotesRandomly(false);
+            }
+        }, 100);
+    }
+    
+    // Board size change handler
+    $boardSize.on('change', updateBoardLayout);
+    
+    // Shuffle button handler
+    $shuffleBtn.on('click', function() {
+        const messageCount = $('.sticky-note').length;
+        if (messageCount <= 3) {
+            positionNotesCompact();
+            // Add animation class manually for compact layout
+            $('.sticky-note').addClass('shuffling');
+            setTimeout(() => {
+                $('.sticky-note').removeClass('shuffling');
+            }, 800);
+        } else {
+            positionNotesRandomly(true);
+        }
+    });
+    
+    // Download menu toggle
+    $downloadBtn.on('click', function(e) {
+        e.stopPropagation();
+        $downloadMenu.toggleClass('hidden');
+    });
+    
+    // Close download menu when clicking outside
+    $(document).on('click', function() {
+        $downloadMenu.addClass('hidden');
+    });
+    
+    // Prevent menu close when clicking inside
+    $downloadMenu.on('click', function(e) {
+        e.stopPropagation();
+    });
+    
+    // Show/hide loading overlay
+    function showLoading() {
+        $loadingOverlay.removeClass('hidden');
+    }
+    
+    function hideLoading() {
+        $loadingOverlay.addClass('hidden');
+    }
+    
+    // Prepare board for capture
+    function prepareBoardForCapture() {
+        return new Promise(resolve => {
+            // Store original styles
+            const originalStyles = {
+                margin: $board.css('margin'),
+                boxShadow: $board.css('box-shadow'),
+                border: $board.css('border'),
+                background: $board.css('background'),
+                position: $board.css('position')
+            };
+            
+            // Apply styles for clean capture
+            $board.css({
+                'margin': '0',
+                'box-shadow': 'none',
+                'border': 'none',
+                'background': 'white',
+                'position': 'relative'
+            });
+            
+            // Hide other elements
+            $('.container > *:not(#signingBoard)').hide();
+            
+            // Wait for fonts to load
+            document.fonts.ready.then(() => {
+                setTimeout(resolve, 200);
+            });
+        });
+    }
+    
+    // Restore board after capture
+    function restoreBoardAfterCapture() {
+        // Show all elements
+        $('.container > *').show();
+        
+        // Restore original styles
+        $board.css({
+            'margin': '',
+            'box-shadow': '',
+            'border': '',
+            'background': '',
+            'position': ''
+        });
+    }
+    
+    // Download as PNG
+    $('#downloadPNG').on('click', async function() {
+        $downloadMenu.addClass('hidden');
+        showLoading();
+        
+        try {
+            await prepareBoardForCapture();
+            
+            // Wait a bit more for rendering
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            const canvas = await html2canvas($board[0], {
+                scale: 3,
+                backgroundColor: '#ffffff',
+                logging: false,
+                allowTaint: true,
+                useCORS: true,
+                width: $board[0].scrollWidth,
+                height: $board[0].scrollHeight,
+                onclone: function(clonedDoc) {
+                    // Ensure fonts are loaded in the cloned document
+                    const style = clonedDoc.createElement('style');
+                    style.textContent = `
+                        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Caveat:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
+                    `;
+                    clonedDoc.head.appendChild(style);
                 }
             });
+            
+            const link = document.createElement('a');
+            const timestamp = new Date().toISOString().split('T')[0];
+            link.download = `sticky-notes-guestbook-${timestamp}.png`;
+            link.href = canvas.toDataURL('image/png', 1.0);
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('PNG downloaded successfully!', 'success');
+            
+        } catch (error) {
+            console.error('PNG download error:', error);
+            showNotification('Failed to download PNG. Please try again.', 'error');
+        } finally {
+            restoreBoardAfterCapture();
+            hideLoading();
         }
-   
-        // Responsive resize handling
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                positionMessages();
-            }, 300);
-        });
     });
+    
+    // Download as PDF
+    $('#downloadPDF').on('click', async function() {
+        $downloadMenu.addClass('hidden');
+        showLoading();
+        
+        try {
+            await prepareBoardForCapture();
+            
+            // Wait a bit more for rendering
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            const canvas = await html2canvas($board[0], {
+                scale: 2,
+                backgroundColor: '#ffffff',
+                logging: false,
+                allowTaint: true,
+                useCORS: true,
+                width: $board[0].scrollWidth,
+                height: $board[0].scrollHeight,
+                onclone: function(clonedDoc) {
+                    // Ensure fonts are loaded in the cloned document
+                    const style = clonedDoc.createElement('style');
+                    style.textContent = `
+                        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Caveat:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
+                    `;
+                    clonedDoc.head.appendChild(style);
+                }
+            });
+            
+            const imgData = canvas.toDataURL('image/png', 0.95);
+            const { jsPDF } = window.jspdf;
+            
+            const selectedSize = $boardSize.val();
+            let pdfFormat, orientation;
+            
+            switch(selectedSize) {
+                case 'a4':
+                    pdfFormat = 'a4';
+                    orientation = 'portrait';
+                    break;
+                case 'a3':
+                    pdfFormat = 'a3';
+                    orientation = 'portrait';
+                    break;
+                case 'a2':
+                    pdfFormat = [420, 594]; // A2 in mm
+                    orientation = 'portrait';
+                    break;
+                case 'poster':
+                default:
+                    pdfFormat = [457, 610]; // 18"x24" in mm
+                    orientation = 'portrait';
+                    break;
+            }
+            
+            const pdf = new jsPDF({
+                orientation: orientation,
+                unit: 'mm',
+                format: pdfFormat
+            });
+            
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            
+            const imgRatio = canvas.width / canvas.height;
+            const pdfRatio = pdfWidth / pdfHeight;
+            
+            let imgWidth, imgHeight, x = 0, y = 0;
+            
+            if (imgRatio > pdfRatio) {
+                imgWidth = pdfWidth;
+                imgHeight = pdfWidth / imgRatio;
+                y = (pdfHeight - imgHeight) / 2;
+            } else {
+                imgHeight = pdfHeight;
+                imgWidth = pdfHeight * imgRatio;
+                x = (pdfWidth - imgWidth) / 2;
+            }
+            
+            pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+            
+            const timestamp = new Date().toISOString().split('T')[0];
+            pdf.save(`sticky-notes-guestbook-${timestamp}.pdf`);
+            
+            showNotification('PDF downloaded successfully!', 'success');
+            
+        } catch (error) {
+            console.error('PDF download error:', error);
+            showNotification('Failed to download PDF. Please try again.', 'error');
+        } finally {
+            restoreBoardAfterCapture();
+            hideLoading();
+        }
+    });
+    
+    // Preview function
+    $('#previewBtn').on('click', function() {
+        window.print();
+    });
+    
+    // Notification system
+    function showNotification(message, type = 'info') {
+        const bgColor = type === 'success' ? 'bg-green-500' : 
+                       type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+        
+        const $notification = $(`
+            <div class="fixed top-4 right-4 z-50 px-6 py-3 rounded-md text-white ${bgColor} transform translate-x-full transition-transform duration-300 shadow-lg">
+                ${message}
+            </div>
+        `);
+        
+        $('body').append($notification);
+        
+        setTimeout(() => {
+            $notification.removeClass('translate-x-full');
+        }, 100);
+        
+        setTimeout(() => {
+            $notification.addClass('translate-x-full');
+            setTimeout(() => {
+                $notification.remove();
+            }, 300);
+        }, 3000);
+    }
+    
+    // Handle empty state
+    if ($('.message-signature').length === 0) {
+        $messagesContainer.html(`
+            <div class="empty-state">
+                <div class="empty-state-icon">✍️</div>
+                <h3 class="text-xl font-medium mb-2">No signatures yet</h3>
+                <p>Be the first to sign our guestbook!</p>
+            </div>
+        `);
+    } else {
+        // Initialize positioning
+        updateBoardLayout();
+        setTimeout(() => {
+            const messageCount = $('.sticky-note').length;
+            if (messageCount <= 3) {
+                positionNotesCompact();
+            } else {
+                positionNotesRandomly(false);
+            }
+        }, 100);
+    }
+    
+    // Handle window resize
+    $(window).on('resize', function() {
+        clearTimeout(window.resizeTimer);
+        window.resizeTimer = setTimeout(() => {
+            updateBoardLayout();
+        }, 300);
+    });
+    
+    // Auto-reload every 5 minutes to get new messages
+    setInterval(() => location.reload(), 300000);
+});
 </script>
 {% endblock %}
