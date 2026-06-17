@@ -1,661 +1,295 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guest Messages</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <style>
-        /* Base styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background-color: #ffffff;
-            color: #333333;
-            overflow-x: hidden;
-        }
-        
-        .slideshow-container {
-            position: relative;
-            width: 100%;
-            height: 100vh;
-            background: #ffffff;
-            overflow: hidden;
-        }
-        
-        /* Header section */
-        .header {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            padding: 1.5rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-        }
-        
-        .event-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-        
-        .logo-container {
-            display: flex;
-            align-items: center;
-        }
-        
-        .event-logo {
-            height: 45px;
-            width: auto;
-            object-fit: contain;
-        }
-        
-        /* Message counter */
-        .message-counter {
-            background: #f8f9fa;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: #495057;
-            border: 1px solid #e9ecef;
-        }
-        
-        /* Swiper container */
-        .swiper {
-            width: 100%;
-            height: 100%;
-            padding-top: 6rem;
-        }
-        
-        .swiper-slide {
-            width: 380px;
-            height: 480px;
-            border-radius: 8px;
-            background: #ffffff;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
-            overflow: hidden;
-            transition: all 0.4s ease;
-            opacity: 0.5;
-            transform: scale(0.9);
-        }
-        
-        .swiper-slide-active {
-            opacity: 1;
-            transform: scale(1);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-        }
-        
-        .swiper-slide-next,
-        .swiper-slide-prev {
-            opacity: 0.8;
-            transform: scale(0.95);
-        }
-        
-        /* Card styling */
-        .message-card {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            background: #ffffff;
-        }
-        
-        .card-header {
-            padding: 1.25rem 1.5rem;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
-        }
-        
-        .guest-name {
-            font-weight: 600;
-            color: #2c3e50;
-            font-size: 1.1rem;
-        }
-        
-        .message-content {
-            flex: 1;
-            padding: 2rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .message-image {
-            max-width: 100%;
-            max-height: 280px;
-            object-fit: contain;
-            border-radius: 4px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-        }
-        
-        .card-footer {
-            padding: 1rem 1.5rem;
-            background: #f8f9fa;
-            border-top: 1px solid #e9ecef;
-            color: #6c757d;
-            font-size: 0.85rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .timestamp {
-            font-weight: 500;
-        }
-        
-        /* Controls */
-        .controls {
-            position: absolute;
-            bottom: 2rem;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            gap: 1rem;
-        }
-        
-        .control-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: #ffffff;
-            border: 1px solid #e9ecef;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            transition: all 0.2s ease;
-        }
-        
-        .control-btn:hover {
-            background: #f8f9fa;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        }
-        
-        .control-btn svg {
-            width: 20px;
-            height: 20px;
-            fill: #495057;
-        }
-        
-        .slide-indicators {
-            display: flex;
-            gap: 0.5rem;
-        }
-        
-        .indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #dee2e6;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .indicator.active {
-            background: #2c3e50;
-            transform: scale(1.2);
-        }
-        
-        /* Progress bar */
-        .progress-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: #e9ecef;
-            z-index: 101;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            background: #2c3e50;
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-        
-        /* Notification */
-        .notification {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            background: #2c3e50;
-            color: white;
-            padding: 0.75rem 1.25rem;
-            border-radius: 6px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            transform: translateX(100%);
-            opacity: 0;
-            transition: all 0.3s ease;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .notification.show {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        
-        .notification-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #4ecdc4;
-        }
-        
-        /* Empty state */
-        .empty-state {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            color: #6c757d;
-        }
-        
-        .empty-state h3 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-            color: #495057;
-        }
-        
-        .empty-state p {
-            margin-bottom: 1.5rem;
-        }
-        
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #e9ecef;
-            border-top: 3px solid #2c3e50;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .swiper-slide {
-                width: 320px;
-                height: 420px;
-            }
-            
-            .header {
-                padding: 1rem;
-            }
-            
-            .event-title {
-                font-size: 1.1rem;
-            }
-            
-            .event-logo {
-                height: 35px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .swiper-slide {
-                width: 280px;
-                height: 380px;
-            }
-            
-            .message-content {
-                padding: 1.5rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="slideshow-container">
-        <!-- Progress bar -->
-        <div class="progress-container">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-        
-        <!-- Header -->
-        <div class="header">
-            <div class="event-title">Guest Messages</div>
-            <div class="logo-container">
-                {% if event.overlay_image %}
-                <img src="{{ event.overlay_image.url }}" alt="Event Logo" class="event-logo">
-                {% endif %}
-                <div class="message-counter">
-                    <span id="currentIndex">1</span> / <span id="totalCount">{{ messages|length }}</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Main Swiper Container -->
-        <div class="swiper">
-            <div class="swiper-wrapper">
-                {% for message in messages %}
-                <div class="swiper-slide" data-index="{{ forloop.counter }}">
-                    <div class="message-card">
-                        <!-- Card Header -->
-                        <div class="card-header">
-                            <div class="guest-name">{{ message.name|default:'Anonymous Guest' }}</div>
-                        </div>
-                        
-                        <!-- Message Content -->
-                        <div class="message-content">
-                            <img
-                                src="{{ message.signature_base64 }}"
-                                alt="Message from {{ message.name|default:'Guest' }}"
-                                class="message-image"
-                                loading="lazy"
-                                decoding="async"
-                            >
-                        </div>
-                        
-                        <!-- Card Footer -->
-                        <div class="card-footer">
-                            <div class="timestamp">{{ message.created_at|date:"M d, Y • H:i" }}</div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        
-        <!-- Controls -->
-        <div class="controls">
-            <div class="control-btn" id="prevBtn">
-                <svg viewBox="0 0 24 24">
-                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-                </svg>
-            </div>
-            
-            <div class="slide-indicators" id="slideIndicators">
-                <!-- Indicators will be generated by JavaScript -->
-            </div>
-            
-            <div class="control-btn" id="nextBtn">
-                <svg viewBox="0 0 24 24">
-                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
-                </svg>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Notification -->
-    <div class="notification" id="notification">
-        <div class="notification-dot"></div>
-        <span id="notificationText"></span>
-    </div>
-    
-    <!-- Empty State (initially hidden) -->
-    {% if messages|length == 0 %}
-    <div class="empty-state">
-        <h3>No Messages Yet</h3>
-        <p>Waiting for guest messages...</p>
-        <div class="spinner"></div>
-    </div>
-    {% endif %}
+{% extends 'guestbook/base.html' %}
+{% block content %}
+<div class="min-h-screen" style="background:#f1f0eb;">
+  <div class="max-w-7xl mx-auto px-4 py-6">
 
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // State management
-            const state = {
-                actualSlideCount: document.querySelectorAll('.swiper-slide').length,
-                currentSlide: 0,
-                isPlaying: true,
-                elements: {
-                    currentIndex: document.getElementById('currentIndex'),
-                    totalCount: document.getElementById('totalCount'),
-                    progressBar: document.getElementById('progressBar'),
-                    slideIndicators: document.getElementById('slideIndicators'),
-                    prevBtn: document.getElementById('prevBtn'),
-                    nextBtn: document.getElementById('nextBtn'),
-                    notification: document.getElementById('notification'),
-                    notificationText: document.getElementById('notificationText')
-                }
-            };
-            
-            // Create slide indicators
-            function createSlideIndicators() {
-                state.elements.slideIndicators.innerHTML = '';
-                for (let i = 0; i < state.actualSlideCount; i++) {
-                    const indicator = document.createElement('div');
-                    indicator.className = 'indicator';
-                    if (i === 0) indicator.classList.add('active');
-                    indicator.addEventListener('click', () => swiper.slideTo(i));
-                    state.elements.slideIndicators.appendChild(indicator);
-                }
-            }
-            
-            // Update progress bar
-            function updateProgressBar() {
-                if (state.elements.progressBar) {
-                    const progress = ((state.currentSlide + 1) / state.actualSlideCount) * 100;
-                    state.elements.progressBar.style.width = progress + '%';
-                }
-            }
-            
-            // Update slide indicators
-            function updateSlideIndicators() {
-                const indicators = state.elements.slideIndicators.querySelectorAll('.indicator');
-                indicators.forEach((indicator, index) => {
-                    indicator.classList.toggle('active', index === state.currentSlide);
-                });
-            }
-            
-            // Update counter and UI elements
-            function updateCounter(swiper) {
-                const activeSlide = swiper.slides[swiper.activeIndex];
-                const currentIndex = activeSlide.getAttribute('data-index');
-                state.currentSlide = parseInt(currentIndex) - 1;
-                
-                state.elements.currentIndex.textContent = currentIndex;
-                state.elements.totalCount.textContent = state.actualSlideCount;
-                
-                updateProgressBar();
-                updateSlideIndicators();
-            }
-            
-            // Enhanced Swiper configuration
-            const swiper = new Swiper('.swiper', {
-                effect: 'coverflow',
-                centeredSlides: true,
-                slidesPerView: 'auto',
-                spaceBetween: 30,
-                initialSlide: 0,
-                loop: true,
-                grabCursor: true,
-                keyboard: {
-                    enabled: true,
-                },
-                mousewheel: {
-                    thresholdDelta: 50,
-                },
-                coverflowEffect: {
-                    rotate: 0,
-                    stretch: 0,
-                    depth: 50,
-                    modifier: 1,
-                    slideShadows: false,
-                },
-                autoplay: {
-                    delay: 5000,
-                    disableOnInteraction: false,
-                    pauseOnMouseEnter: true,
-                    waitForTransition: true
-                },
-                speed: 600,
-                on: {
-                    slideChange: function () {
-                        updateCounter(this);
-                    },
-                    init: function () {
-                        updateCounter(this);
-                        createSlideIndicators();
-                    },
-                    autoplayStart: function() {
-                        state.isPlaying = true;
-                    },
-                    autoplayStop: function() {
-                        state.isPlaying = false;
-                    }
-                }
-            });
-            
-            // Navigation buttons
-            state.elements.prevBtn.addEventListener('click', () => swiper.slidePrev());
-            state.elements.nextBtn.addEventListener('click', () => swiper.slideNext());
-            
-            // Enhanced WebSocket functionality
-            function setupWebSocket() {
-                const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                const wsUrl = `${wsProtocol}//${window.location.host}/ws/messages/{{ event_id }}/`;
-                
-                const socket = new WebSocket(wsUrl);
-                
-                socket.onmessage = function (e) {
-                    try {
-                        const data = JSON.parse(e.data);
-                        if (data.type === 'new_message') {
-                            addNewMessage(data.message);
-                        }
-                    } catch (error) {
-                        console.error("WebSocket message error:", error);
-                    }
-                };
-                
-                socket.onclose = function () {
-                    setTimeout(() => setupWebSocket(), 2000);
-                };
-                
-                socket.onerror = function(error) {
-                    console.error("WebSocket error:", error);
-                };
-            }
-            
-            // Enhanced add new message functionality
-            function addNewMessage(message) {
-                state.actualSlideCount++;
-                
-                // Create new slide element
-                const newSlide = document.createElement('div');
-                newSlide.className = 'swiper-slide';
-                newSlide.setAttribute('data-index', state.actualSlideCount);
-                
-                // Format date
-                const messageDate = new Date(message.created_at);
-                const formattedDate = messageDate.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                
-                newSlide.innerHTML = `
-                    <div class="message-card">
-                        <div class="card-header">
-                            <div class="guest-name">${message.name || 'Anonymous Guest'}</div>
-                        </div>
-                        <div class="message-content">
-                            <img
-                                src="${message.signature_base64}"
-                                alt="Message from ${message.name || 'Guest'}"
-                                class="message-image"
-                                loading="lazy"
-                                decoding="async"
-                            >
-                        </div>
-                        <div class="card-footer">
-                            <div class="timestamp">${formattedDate}</div>
-                        </div>
-                    </div>
-                `;
-                
-                // Add slide to swiper
-                swiper.appendSlide(newSlide);
-                
-                // Update indicators
-                createSlideIndicators();
-                
-                // Update swiper and UI
-                swiper.update();
-                state.elements.totalCount.textContent = state.actualSlideCount;
-                
-                // Show notification for new message
-                showNewMessageNotification(message.name || 'Anonymous Guest');
-            }
-            
-            // New message notification
-            function showNewMessageNotification(name) {
-                state.elements.notificationText.textContent = `New message from ${name}`;
-                state.elements.notification.classList.add('show');
-                
-                setTimeout(() => {
-                    state.elements.notification.classList.remove('show');
-                }, 3000);
-            }
-            
-            // Keyboard controls
-            document.addEventListener('keydown', function(e) {
-                switch(e.code) {
-                    case 'ArrowLeft':
-                        swiper.slidePrev();
-                        break;
-                    case 'ArrowRight':
-                        swiper.slideNext();
-                        break;
-                    case 'Space':
-                        e.preventDefault();
-                        if (state.isPlaying) {
-                            swiper.autoplay.stop();
-                        } else {
-                            swiper.autoplay.start();
-                        }
-                        break;
-                    case 'Home':
-                        swiper.slideTo(0);
-                        break;
-                    case 'End':
-                        swiper.slideTo(state.actualSlideCount - 1);
-                        break;
-                }
-            });
-            
-            // Initialize WebSocket if there are messages
-            if (state.actualSlideCount > 0) {
-                setupWebSocket();
-            }
-            
-            // Performance optimization - pause animations when tab is not visible
-            document.addEventListener('visibilitychange', function() {
-                if (document.hidden) {
-                    swiper.autoplay.stop();
-                } else {
-                    if (state.isPlaying) {
-                        swiper.autoplay.start();
-                    }
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+    <!-- Top bar -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800">Download Board</h1>
+        <p class="text-sm text-gray-500 mt-0.5">{{ event.name }} &mdash; {{ event.date|date:"F j, Y" }}</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <select id="boardSize" class="text-sm px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400">
+          <option value="a4">A4</option>
+          <option value="a3">A3</option>
+          <option value="poster" selected>Poster 18×24"</option>
+        </select>
+        <button id="shuffleBtn" class="px-4 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium text-gray-700">
+          ⇄ Shuffle
+        </button>
+        <button id="downloadPNG" class="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Download PNG
+        </button>
+        <button id="downloadPDF" class="px-4 py-2 text-sm bg-gray-800 text-white rounded-lg hover:bg-gray-900 font-medium flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Download PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- Canvas preview -->
+    <div id="canvasWrapper" class="mx-auto shadow-2xl rounded-lg overflow-hidden bg-white" style="width:fit-content;max-width:100%;">
+      <canvas id="boardCanvas"></canvas>
+    </div>
+
+  </div>
+</div>
+
+<!-- Loading overlay -->
+<div id="loadingOverlay" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-2xl px-10 py-8 flex flex-col items-center gap-4 shadow-2xl">
+    <div class="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+    <p id="loadingMsg" class="text-gray-700 font-medium">Rendering…</p>
+  </div>
+</div>
+
+<!-- Data islands -->
+<script id="messagesData" type="application/json">
+[{% for m in messages %}{"name":"{{ m.name|escapejs }}","sig":"{{ m.signature_base64|escapejs }}","date":"{{ m.created_at|date:'M d, Y'|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]
+</script>
+{% if event.bg_image %}<meta id="bgImageUrl" content="{{ event.bg_image.url }}">{% endif %}
+<meta id="eventName" content="{{ event.name|escapejs }}">
+<meta id="eventDate" content="{{ event.date|date:'F j, Y' }}">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  const SIZES = {
+    a4:     { w: 794,  h: 1123 },
+    a3:     { w: 1123, h: 1587 },
+    poster: { w: 1296, h: 1728 },
+  };
+  const SCALE    = 2;
+  const HEADER_H = 150;
+
+  const messages  = JSON.parse(document.getElementById('messagesData').textContent);
+  const bgMeta    = document.getElementById('bgImageUrl');
+  const bgUrl     = bgMeta ? bgMeta.content : null;
+  const eventName = document.getElementById('eventName').content;
+  const eventDate = document.getElementById('eventDate').content;
+
+  const canvas  = document.getElementById('boardCanvas');
+  const ctx     = canvas.getContext('2d');
+  const wrapper = document.getElementById('canvasWrapper');
+
+  let currentSize = 'poster';
+  let positions   = [];
+
+  // ── helpers ──────────────────────────────────────────────────────────
+  const rand = (a, b) => Math.random() * (b - a) + a;
+
+  function setLoading(on, msg) {
+    document.getElementById('loadingOverlay').classList.toggle('hidden', !on);
+    if (msg) document.getElementById('loadingMsg').textContent = msg;
+  }
+
+  function loadImg(src) {
+    return new Promise((res, rej) => {
+      const i = new Image();
+      i.crossOrigin = 'anonymous';
+      i.onload  = () => res(i);
+      i.onerror = () => res(null);   // graceful null on failure
+      i.src = src;
+    });
+  }
+
+  // ── layout ───────────────────────────────────────────────────────────
+  function computeLayout(BW, BH, count) {
+    if (!count) return [];
+    const avH   = BH - HEADER_H - 20;
+    const noteW = Math.min(170, BW / 5);
+    const noteH = noteW * 1.0;
+    const pad   = 16;
+    const cols  = Math.max(1, Math.floor((BW - pad) / (noteW + pad)));
+    const rows  = Math.ceil(count / cols);
+    const cellW = (BW - pad) / cols;
+    const cellH = (avH - pad) / Math.max(rows, 1);
+    const out   = [];
+    for (let i = 0; i < count; i++) {
+      const col = i % cols, row = Math.floor(i / cols);
+      const cx = pad + col * cellW + cellW / 2;
+      const cy = HEADER_H + pad + row * cellH + cellH / 2;
+      out.push({
+        x:   Math.max(noteW / 2 + 4, Math.min(BW - noteW / 2 - 4, cx + rand(-cellW * .1, cellW * .1))),
+        y:   Math.max(HEADER_H + noteH / 2 + 4, Math.min(BH - noteH / 2 - 4, cy + rand(-cellH * .1, cellH * .1))),
+        rot: rand(-7, 7) * Math.PI / 180,
+        w:   noteW,
+        h:   noteH,
+      });
+    }
+    return out;
+  }
+
+  // ── draw ─────────────────────────────────────────────────────────────
+  async function draw(BW, BH, sigImgs, bgImg) {
+    canvas.width  = BW * SCALE;
+    canvas.height = BH * SCALE;
+    ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
+
+    // Background
+    if (bgImg) {
+      const bAR = bgImg.width / bgImg.height, cAR = BW / BH;
+      let sx, sy, sw, sh;
+      if (bAR > cAR) { sh = bgImg.height; sw = sh * cAR; sx = (bgImg.width - sw) / 2; sy = 0; }
+      else           { sw = bgImg.width;  sh = sw / cAR; sx = 0; sy = (bgImg.height - sh) / 2; }
+      ctx.drawImage(bgImg, sx, sy, sw, sh, 0, 0, BW, BH);
+      ctx.fillStyle = 'rgba(255,255,255,0.40)';
+      ctx.fillRect(0, 0, BW, BH);
+    } else {
+      // Cream background with dot-grid
+      ctx.fillStyle = '#faf9f6';
+      ctx.fillRect(0, 0, BW, BH);
+      ctx.fillStyle = 'rgba(0,0,0,0.045)';
+      for (let x = 20; x < BW; x += 22)
+        for (let y = 20; y < BH; y += 22) {
+          ctx.beginPath(); ctx.arc(x, y, 1, 0, Math.PI * 2); ctx.fill();
+        }
+    }
+
+    // ── Header ─────────────────────────────────────────────────────
+    const titleSz = Math.round(BW / 17);
+    const dateSz  = Math.round(BW / 36);
+
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'top';
+
+    // Event name
+    ctx.font      = `600 ${titleSz}px Georgia, serif`;
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillText(eventName, BW / 2, 28);
+
+    // Date
+    ctx.font      = `${dateSz}px Georgia, serif`;
+    ctx.fillStyle = '#555';
+    ctx.fillText(eventDate, BW / 2, 28 + titleSz + 10);
+
+    // Decorative rule
+    const ruleY = 28 + titleSz + 10 + dateSz + 18;
+    ctx.strokeStyle = 'rgba(0,0,0,0.13)';
+    ctx.lineWidth   = 0.8;
+    const rW = Math.min(120, BW * .15);
+    ctx.beginPath(); ctx.moveTo(BW / 2 - rW, ruleY); ctx.lineTo(BW / 2 + rW, ruleY); ctx.stroke();
+    ctx.fillStyle = '#bbb';
+    ctx.save(); ctx.translate(BW / 2, ruleY); ctx.rotate(Math.PI / 4);
+    ctx.fillRect(-3, -3, 6, 6); ctx.restore();
+
+    // ── Signatures ─────────────────────────────────────────────────
+    ctx.textBaseline = 'middle';
+    for (let i = 0; i < messages.length && i < positions.length; i++) {
+      const p = positions[i], msg = messages[i], img = sigImgs[i];
+
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+
+      if (img) {
+        // Draw just the ink — no background, no card
+        const ar = img.width / img.height;
+        const mW = p.w - 6, mH = p.h - 32;
+        let dw = mW, dh = mW / ar;
+        if (dh > mH) { dh = mH; dw = mH * ar; }
+        ctx.drawImage(img, -dw / 2, -p.h / 2 + 4, dw, dh);
+      }
+
+      // Name
+      const nSz = Math.max(9, Math.round(p.w / 11));
+      ctx.textAlign  = 'center';
+      ctx.font       = `600 ${nSz}px Georgia, serif`;
+      ctx.fillStyle  = '#1a1a2e';
+      ctx.fillText(msg.name, 0, p.h / 2 - nSz - 4);
+
+      // Date
+      const dSz = Math.max(7, nSz - 3);
+      ctx.font      = `${dSz}px sans-serif`;
+      ctx.fillStyle = 'rgba(0,0,0,0.38)';
+      ctx.fillText(msg.date, 0, p.h / 2 - 4);
+
+      ctx.restore();
+    }
+
+    // Footer
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.font         = `${Math.round(BW / 65)}px sans-serif`;
+    ctx.fillStyle    = 'rgba(0,0,0,0.18)';
+    ctx.fillText('Digital Guestbook', BW / 2, BH - 10);
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+  }
+
+  // ── render (preview) ─────────────────────────────────────────────────
+  async function render(relayout) {
+    setLoading(true, 'Loading images…');
+    try {
+      const { w: BW, h: BH } = SIZES[currentSize];
+      const [sigImgs, bgImg] = await Promise.all([
+        Promise.all(messages.map(m => loadImg(m.sig))),
+        bgUrl ? loadImg(bgUrl) : Promise.resolve(null),
+      ]);
+      if (relayout || !positions.length) positions = computeLayout(BW, BH, messages.length);
+      setLoading(true, 'Drawing…');
+      await draw(BW, BH, sigImgs, bgImg);
+
+      // Fit canvas to viewport
+      const maxW  = (wrapper.parentElement.clientWidth || 900) - 32;
+      const scale = Math.min(1, maxW / BW);
+      canvas.style.width  = Math.round(BW * scale) + 'px';
+      canvas.style.height = Math.round(BH * scale) + 'px';
+      wrapper.style.width = canvas.style.width;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ── download helpers ─────────────────────────────────────────────────
+  async function renderForExport() {
+    const { w: BW, h: BH } = SIZES[currentSize];
+    const [sigImgs, bgImg] = await Promise.all([
+      Promise.all(messages.map(m => loadImg(m.sig))),
+      bgUrl ? loadImg(bgUrl) : Promise.resolve(null),
+    ]);
+    // Use existing positions so download matches preview
+    await draw(BW, BH, sigImgs, bgImg);
+    return canvas.toDataURL('image/png', 1.0);
+  }
+
+  document.getElementById('downloadPNG').addEventListener('click', async () => {
+    setLoading(true, 'Generating PNG…');
+    try {
+      const url = await renderForExport();
+      const a = document.createElement('a');
+      a.href     = url;
+      a.download = `guestbook-${eventName.replace(/\s+/g, '-')}.png`;
+      a.click();
+    } catch (e) { alert('PNG failed: ' + e.message); }
+    finally { await render(false); setLoading(false); }
+  });
+
+  document.getElementById('downloadPDF').addEventListener('click', async () => {
+    setLoading(true, 'Generating PDF…');
+    try {
+      const url = await renderForExport();
+      const { jsPDF } = window.jspdf;
+      const { w: BW, h: BH } = SIZES[currentSize];
+      const mmW = BW * 25.4 / 96;
+      const mmH = BH * 25.4 / 96;
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [mmW, mmH] });
+      pdf.addImage(url, 'PNG', 0, 0, mmW, mmH);
+      pdf.save(`guestbook-${eventName.replace(/\s+/g, '-')}.pdf`);
+    } catch (e) { alert('PDF failed: ' + e.message); }
+    finally { await render(false); setLoading(false); }
+  });
+
+  document.getElementById('shuffleBtn').addEventListener('click', () => render(true));
+  document.getElementById('boardSize').addEventListener('change', e => {
+    currentSize = e.target.value; positions = []; render(false);
+  });
+
+  render(false);
+})();
+</script>
+{% endblock %}

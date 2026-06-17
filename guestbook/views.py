@@ -232,7 +232,7 @@ class GuestbookView(View):
 
 @method_decorator(login_required(login_url='guestbook:login'), name='dispatch')   
 class MessagesView(View):
-    template_name = 'guestbook/messages.html'
+    template_name = 'guestbook/messages_template.html'
     
     def get(self, request, *args, **kwargs):
         event_id = kwargs.get('event_id')
@@ -241,6 +241,7 @@ class MessagesView(View):
         context = {
             'event': event,
             'messages': messages,
+            'bg_image_url': event.bg_image.url if event and event.bg_image else None,
         }
         return render(request, self.template_name, context)
 
@@ -257,7 +258,7 @@ class MessagesView(View):
 
 @method_decorator(login_required(login_url='guestbook:login'), name='dispatch')
 class MessageDisplayView(TemplateView):
-    template_name = 'guestbook/messages_template.html'
+    template_name = 'guestbook/messages.html'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

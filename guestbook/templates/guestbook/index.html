@@ -753,11 +753,7 @@
                     
                     tempCtx.scale(canvasScale, canvasScale);
                     
-                    // Draw clean white background
-                    tempCtx.fillStyle = '#ffffff';
-                    tempCtx.fillRect(0, 0, canvas.width / canvasScale, canvas.height / canvasScale);
-                    
-                    // Draw the signature on top
+                    // Draw signature with transparent background
                     tempCtx.drawImage(canvas, 0, 0, canvas.width / canvasScale, canvas.height / canvasScale);
                     
                     const dataURL = tempCanvas.toDataURL('image/png', 0.95);

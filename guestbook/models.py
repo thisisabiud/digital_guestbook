@@ -9,6 +9,11 @@ class Event(models.Model):
     date = models.DateField()
     location = models.CharField(max_length=200)
     overlay_image = models.ImageField(upload_to='events', null=True, blank=True)
+    bg_image = models.ImageField(
+        upload_to='events/bg', null=True, blank=True,
+        verbose_name='Download Canvas Background',
+        help_text='Background image for the downloadable signing board'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

@@ -19,10 +19,10 @@ class GuestbookEntryAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('name', 'date', 'location', 'overlay_image_preview', 'entries_count', 'created_at', 'updated_at')
+    list_display = ('name', 'date', 'location', 'overlay_image_preview', 'bg_image_preview', 'entries_count', 'created_at', 'updated_at')
     list_filter = ('date', 'created_at')
     search_fields = ('name', 'location')
-    readonly_fields = ('created_at', 'updated_at', 'overlay_image_preview')
+    readonly_fields = ('created_at', 'updated_at', 'overlay_image_preview', 'bg_image_preview')
 
     def entries_count(self, obj):
         return obj.entries.count()
@@ -33,6 +33,12 @@ class EventAdmin(admin.ModelAdmin):
             return mark_safe(f'<img src="{obj.overlay_image.url}" style="max-width:100px; max-height:100px;"/>')
         return _('No image')
     overlay_image_preview.short_description = _('Overlay Image Preview')
+
+    def bg_image_preview(self, obj):
+        if obj.bg_image:
+            return mark_safe(f'<img src="{obj.bg_image.url}" style="max-width:100px; max-height:60px; object-fit:cover;"/>')
+        return _('No background')
+    bg_image_preview.short_description = _('Canvas Background')
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related('entries')
