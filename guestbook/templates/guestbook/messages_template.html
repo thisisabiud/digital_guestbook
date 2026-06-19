@@ -186,17 +186,22 @@
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rot);
 
+      // Name (compute first so the signature can be anchored just above it)
+      const nSz   = Math.max(9, Math.round(p.w / 11));
+      const nameY = p.h / 2 - nSz - 4;
+      const sigGap = 4; // small fixed gap between signature ink and name
+
       if (img) {
         // Draw just the ink — no background, no card
         const ar = img.width / img.height;
         const mW = p.w - 6, mH = p.h - 32;
         let dw = mW, dh = mW / ar;
         if (dh > mH) { dh = mH; dw = mH * ar; }
-        ctx.drawImage(img, -dw / 2, -p.h / 2 + 4, dw, dh);
+        const sigBottomY = nameY - sigGap;
+        const sigTopY    = Math.max(-p.h / 2 + 4, sigBottomY - dh);
+        ctx.drawImage(img, -dw / 2, sigTopY, dw, sigBottomY - sigTopY);
       }
 
-      // Name
-      const nSz = Math.max(9, Math.round(p.w / 11));
       ctx.textAlign  = 'center';
       ctx.font       = `600 ${nSz}px Georgia, serif`;
       ctx.fillStyle  = '#1a1a2e';
